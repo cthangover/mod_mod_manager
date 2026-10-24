@@ -151,6 +151,7 @@ namespace Mods.ModManager
             row.AddChild(UiKit.Spacer());
 
             var newGame = UiKit.Button(TranslationServer.Translate("mod_manager/gallery_new_game"), ButtonKind.Primary);
+            newGame.TooltipText = newGame.Text;
             newGame.Pressed += () => NewGameRequested?.Invoke();
             row.AddChild(newGame);
             _host.AddChild(row);
@@ -401,6 +402,7 @@ namespace Mods.ModManager
                 button.Disabled = true;
             }
 
+            button.TooltipText = button.Text;
             if (action != null)
                 button.Pressed += action;
             return button;
@@ -409,6 +411,7 @@ namespace Mods.ModManager
         private Button BuildEditButton(ModCollectionGameSummary summary)
         {
             var button = UiKit.Button(TranslationServer.Translate("mod_manager/gallery_edit_scheme"));
+            button.TooltipText = button.Text;
             button.Disabled = _installingId != null;
             button.Pressed += () => EditSchemeRequested?.Invoke(summary.Collection.Id);
             return button;
@@ -417,6 +420,7 @@ namespace Mods.ModManager
         private Button BuildDeleteButton(ModCollectionGameSummary summary)
         {
             var button = UiKit.Button(TranslationServer.Translate("mod_manager/collection_delete"), ButtonKind.Danger);
+            button.TooltipText = button.Text;
             button.Disabled = _installingId != null;
             button.Pressed += () => CollectionDeletion.Confirm(this, summary.Collection, () =>
             {

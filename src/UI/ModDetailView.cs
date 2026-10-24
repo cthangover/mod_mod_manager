@@ -177,6 +177,7 @@ namespace Mods.ModManager
             }
 
             _versions.Selected = selectedIndex;
+            _versions.TooltipText = _versions.GetItemText(selectedIndex);
         }
 
         private void BuildActions()
@@ -190,7 +191,7 @@ namespace Mods.ModManager
             var primary = ModActions.GetPrimary(_data);
             if (primary != null)
             {
-                var button = new Button { Text = ModActionNames.Translate(primary.Value) };
+                var button = new Button { Text = ModActionNames.Translate(primary.Value), TooltipText = ModActionNames.Translate(primary.Value) };
                 if (ModActionNames.IsDanger(primary.Value))
                     CthangoverTheme.ApplyDanger(button);
                 else
@@ -201,7 +202,7 @@ namespace Mods.ModManager
 
             if (primary != ModActionKind.Delete && _data.IsDeletable)
             {
-                var delete = new Button { Text = ModActionNames.Translate(ModActionKind.Delete) };
+                var delete = new Button { Text = ModActionNames.Translate(ModActionKind.Delete), TooltipText = ModActionNames.Translate(ModActionKind.Delete) };
                 CthangoverTheme.ApplyDanger(delete);
                 delete.Pressed += OnDeletePressed;
                 _actionsRow.AddChild(delete);
@@ -212,6 +213,9 @@ namespace Mods.ModManager
                 var toggle = new Button
                 {
                     Text = ModActionNames.Translate(_data.IsDisabled
+                        ? ModActionKind.Enable
+                        : ModActionKind.Disable),
+                    TooltipText = ModActionNames.Translate(_data.IsDisabled
                         ? ModActionKind.Enable
                         : ModActionKind.Disable),
                 };

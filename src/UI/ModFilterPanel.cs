@@ -52,9 +52,11 @@ namespace Mods.ModManager
 
             _title.Text = TranslationServer.Translate("mod_manager/filters");
             _reset.Text = TranslationServer.Translate("mod_manager/reset_filters");
+            _reset.TooltipText = TranslationServer.Translate("mod_manager/filters_reset_tooltip");
             _statusCaption.Text = TranslationServer.Translate("mod_manager/filter_status");
             _categoryCaption.Text = TranslationServer.Translate("mod_manager/filter_categories");
             _groupToggle.Text = TranslationServer.Translate("mod_manager/group_by_category");
+            _groupToggle.TooltipText = _groupToggle.Text;
             _groupToggle.ButtonPressed = _state.GroupByCategory;
 
             _statusCaption.AddThemeColorOverride("font_color", UiTokens.Muted);
@@ -78,12 +80,14 @@ namespace Mods.ModManager
             {
                 var count = statusCounts.GetValueOrDefault(pair.Key);
                 pair.Value.Text = $"{ModStatusNames.Translate(pair.Key)} ({count})";
+                pair.Value.TooltipText = pair.Value.Text;
             }
 
             foreach (var pair in _categoryBoxes)
             {
                 var count = categoryCounts.GetValueOrDefault(pair.Key);
                 pair.Value.Text = $"{ModCategoryNames.Translate(pair.Key)} ({count})";
+                pair.Value.TooltipText = pair.Value.Text;
             }
         }
 

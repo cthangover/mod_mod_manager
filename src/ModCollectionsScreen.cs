@@ -199,6 +199,13 @@ namespace Mods.ModManager
             _newGame.Text = TranslationServer.Translate("mod_manager/collection_new_game");
             _pillProblems.Text = TranslationServer.Translate("mod_manager/collection_problems");
             _pillPlan.Text = TranslationServer.Translate("mod_manager/collection_plan");
+            _close.TooltipText = _close.Text;
+            _refresh.TooltipText = _refresh.Text;
+            _addMechanic.TooltipText = _addMechanic.Text;
+            _newGame.TooltipText = _newGame.Text;
+            _gameSelect.TooltipText = TranslationServer.Translate("mod_manager/collection_game_tooltip");
+            _pillProblems.TooltipText = TranslationServer.Translate("mod_manager/collection_problems_tooltip");
+            _pillPlan.TooltipText = TranslationServer.Translate("mod_manager/collection_plan_tooltip");
             _dirty.Text = TranslationServer.Translate("mod_manager/collection_unsaved");
             _json.Text = TranslationServer.Translate("mod_manager/collection_json");
             _reset.Text = TranslationServer.Translate("mod_manager/collection_reset");
@@ -206,15 +213,23 @@ namespace Mods.ModManager
             _tabInspector.Text = TranslationServer.Translate("mod_manager/collection_tab_inspector");
             _tabProblems.Text = TranslationServer.Translate("mod_manager/collection_tab_problems");
             _tabPlan.Text = TranslationServer.Translate("mod_manager/collection_tab_plan");
+            _json.TooltipText = TranslationServer.Translate("mod_manager/collection_json_tooltip");
+            _reset.TooltipText = TranslationServer.Translate("mod_manager/collection_reset_tooltip");
+            _save.TooltipText = _save.Text;
+            _tabInspector.TooltipText = _tabInspector.Text;
+            _tabProblems.TooltipText = _tabProblems.Text;
+            _tabPlan.TooltipText = _tabPlan.Text;
             _apply.Text = TranslationServer.Translate("mod_manager/collection_apply");
             _edgesToggle.Text = TranslationServer.Translate("mod_manager/collection_links");
+            _apply.TooltipText = _apply.Text;
+            _edgesToggle.TooltipText = _edgesToggle.Text;
 
             var header = _json.GetParent();
             _savesInfo = new Label { VerticalAlignment = VerticalAlignment.Center };
             _savesInfo.AddThemeColorOverride("font_color", UiTokens.Muted);
-            _duplicate = new Button { Text = TranslationServer.Translate("mod_manager/collection_duplicate") };
-            _revert = new Button { Text = TranslationServer.Translate("mod_manager/collection_revert") };
-            _delete = new Button { Text = TranslationServer.Translate("mod_manager/collection_delete") };
+            _duplicate = new Button { Text = TranslationServer.Translate("mod_manager/collection_duplicate"), TooltipText = TranslationServer.Translate("mod_manager/collection_duplicate") };
+            _revert = new Button { Text = TranslationServer.Translate("mod_manager/collection_revert"), TooltipText = TranslationServer.Translate("mod_manager/collection_revert") };
+            _delete = new Button { Text = TranslationServer.Translate("mod_manager/collection_delete"), TooltipText = TranslationServer.Translate("mod_manager/collection_delete") };
             foreach (var control in new Control[] { _savesInfo, _duplicate, _revert, _delete })
             {
                 header.AddChild(control);
@@ -303,10 +318,12 @@ namespace Mods.ModManager
             row.AddChild(UiKit.Spacer());
 
             _buildManager = UiKit.Button(TranslationServer.Translate("mod_manager/build_open_manager"));
+            _buildManager.TooltipText = _buildManager.Text;
             _buildManager.Pressed += () => OpenManagerRequested?.Invoke(null);
             row.AddChild(_buildManager);
 
             _buildApply = UiKit.Button(TranslationServer.Translate("mod_manager/collection_apply"), ButtonKind.Primary);
+            _buildApply.TooltipText = _buildApply.Text;
             _buildApply.Pressed += OnApplyPressed;
             row.AddChild(_buildApply);
         }
@@ -1078,6 +1095,7 @@ namespace Mods.ModManager
         private Button MakeInspectorButton(string text, Action action, bool danger = false)
         {
             var button = UiKit.Button(text, danger ? ButtonKind.Danger : ButtonKind.Secondary);
+            button.TooltipText = text;
             button.AddThemeFontSizeOverride("font_size", UiTokens.FontSmall);
             button.Pressed += action;
             return button;

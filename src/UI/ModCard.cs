@@ -72,6 +72,8 @@ namespace Mods.ModManager
 
             _author.AddThemeColorOverride("font_color", UiTokens.Muted);
             _source.AddThemeColorOverride("font_color", UiTokens.Muted);
+            // The source tooltip needs hover, while clicks on it must still open the card.
+            _source.MouseFilter = Control.MouseFilterEnum.Pass;
             AddThemeStyleboxOverride("panel", ModManagerTheme.CreateCardStyle(data.IsConflict));
 
             _versions.ItemSelected += OnVersionSelected;
@@ -136,6 +138,7 @@ namespace Mods.ModManager
             {
                 _versions.AddItem("v" + (_data.LocalVersion ?? "—"));
                 _versions.Disabled = true;
+                _versions.TooltipText = _versions.GetItemText(0);
                 return;
             }
 
@@ -211,6 +214,7 @@ namespace Mods.ModManager
 
             _action.Visible = true;
             _action.Text = ModActionNames.Translate(kind.Value);
+            _action.TooltipText = _action.Text;
 
             if (ModActionNames.IsDanger(kind.Value))
                 CthangoverTheme.ApplyDanger(_action);

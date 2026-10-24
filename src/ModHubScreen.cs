@@ -35,6 +35,7 @@ namespace Mods.ModManager
         private const string TabCollections = "collections";
         private const string ModsScene = "scenes/mod_manager_screen.tscn";
         private const string EditorScene = "scenes/mod_collections_screen.tscn";
+        private const string HelpScene = "scenes/components/mod_help_panel.tscn";
 
         /// <summary>Active tab, remembered for the whole game session (mockup: "state is remembered").</summary>
         private static string _activeTab = TabMods;
@@ -53,6 +54,8 @@ namespace Mods.ModManager
         private ModManagerScreen _mods;
         private CollectionsGallery _gallery;
         private ModCollectionsScreen _editor;
+        private ModHelpPanel _help;
+        private Button _helpButton;
         private bool _editorOpen;
 
         /// <summary>Mods installed this session, shared by the gallery and the editor so both stay honest before a restart.</summary>
@@ -66,6 +69,7 @@ namespace Mods.ModManager
             BuildHeader();
             BuildBanner();
             BuildBody();
+            BuildHelp();
 
             ShowTab(_activeTab);
         }
@@ -99,12 +103,14 @@ namespace Mods.ModManager
             _tabMods.ToggleMode = true;
             _tabMods.ButtonGroup = group;
             _tabMods.Pressed += () => ShowTab(TabMods);
+            _tabMods.TooltipText = _tabMods.Text;
             _segment.AddChild(_tabMods);
 
             _tabCollections = UiKit.Button(TranslationServer.Translate("mod_manager/hub_tab_collections"), ButtonKind.Tab);
             _tabCollections.ToggleMode = true;
             _tabCollections.ButtonGroup = group;
             _tabCollections.Pressed += () => ShowTab(TabCollections);
+            _tabCollections.TooltipText = _tabCollections.Text;
             _segment.AddChild(_tabCollections);
 
             header.AddChild(UiKit.Spacer());
@@ -116,11 +122,54 @@ namespace Mods.ModManager
                 SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
             };
             _gallerySearch.TextChanged += OnGallerySearchChanged;
+            _gallerySearch.TooltipText = _gallerySearch.PlaceholderText;
             header.AddChild(_gallerySearch);
 
             _galleryRefresh = UiKit.Button(TranslationServer.Translate("mod_manager/refresh"));
             _galleryRefresh.Pressed += OnGalleryRefreshPressed;
+            _galleryRefresh.TooltipText = _galleryRefresh.Text;
             header.AddChild(_galleryRefresh);
+
+            _helpButton = UiKit.IconButton("?", TranslationServer.Translate("mod_manager/help_open"));
+            _helpButton.Name = "HelpButton";
+            _helpButton.Pressed += OnHelpPressed;
+            header.AddChild(_helpButton);
+        }
+
+        /// <summary>
+        /// Builds the full-screen help overlay once; it stays hidden until the
+        /// header's "?" button opens the page of the level the player is on.
+        /// </summary>
+        private void BuildHelp()
+        {
+            _help = TscnScenes.LoadAndBuild(HelpScene) as ModHelpPanel;
+            if (_help == null)
+            {
+                GameLogger.Log("MOD_HUB", $"Failed to build '{HelpScene}'", LogLevel.Error);
+                return;
+            }
+
+            AddChild(_help);
+            _help.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
+            _help.EnsureConstructed();
+            _help.Visible = false;
+        }
+
+        private void OnHelpPressed()
+        {
+            _help?.Open(CurrentHelpLevel());
+        }
+
+        /// <summary>The help page follows the hub level: the mods grid, an open mod page, the collections gallery or the scheme editor.</summary>
+        private string CurrentHelpLevel()
+        {
+            if (_editorOpen)
+                return "scheme";
+            if (_activeTab == TabCollections)
+                return "collections";
+            if (ModOpen)
+                return "mod_page";
+            return "mods";
         }
 
         private void BuildBanner()
@@ -362,6 +411,13 @@ namespace Mods.ModManager
         {
             if (!@event.IsActionPressed("ui_cancel"))
                 return;
+
+            if (_help != null && _help.Visible)
+            {
+                _help.Close();
+                GetViewport().SetInputAsHandled();
+                return;
+            }
 
             if (_editorOpen)
             {
