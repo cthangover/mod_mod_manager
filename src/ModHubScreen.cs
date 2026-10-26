@@ -103,14 +103,14 @@ namespace Mods.ModManager
             _tabMods.ToggleMode = true;
             _tabMods.ButtonGroup = group;
             _tabMods.Pressed += () => ShowTab(TabMods);
-            _tabMods.TooltipText = _tabMods.Text;
+            ModHelpPanel.Attach(_tabMods, "mods_tab");
             _segment.AddChild(_tabMods);
 
             _tabCollections = UiKit.Button(TranslationServer.Translate("mod_manager/hub_tab_collections"), ButtonKind.Tab);
             _tabCollections.ToggleMode = true;
             _tabCollections.ButtonGroup = group;
             _tabCollections.Pressed += () => ShowTab(TabCollections);
-            _tabCollections.TooltipText = _tabCollections.Text;
+            ModHelpPanel.Attach(_tabCollections, "collections_tab");
             _segment.AddChild(_tabCollections);
 
             header.AddChild(UiKit.Spacer());
@@ -122,24 +122,22 @@ namespace Mods.ModManager
                 SizeFlagsVertical = Control.SizeFlags.ShrinkCenter,
             };
             _gallerySearch.TextChanged += OnGallerySearchChanged;
-            _gallerySearch.TooltipText = _gallerySearch.PlaceholderText;
+            ModHelpPanel.Attach(_gallerySearch, "collection_search");
             header.AddChild(_gallerySearch);
 
             _galleryRefresh = UiKit.Button(TranslationServer.Translate("mod_manager/refresh"));
             _galleryRefresh.Pressed += OnGalleryRefreshPressed;
-            _galleryRefresh.TooltipText = _galleryRefresh.Text;
+            ModHelpPanel.Attach(_galleryRefresh, "refresh");
             header.AddChild(_galleryRefresh);
 
             _helpButton = UiKit.IconButton("?", TranslationServer.Translate("mod_manager/help_open"));
             _helpButton.Name = "HelpButton";
+            _helpButton.ToggleMode = true;
             _helpButton.Pressed += OnHelpPressed;
             header.AddChild(_helpButton);
         }
 
-        /// <summary>
-        /// Builds the full-screen help overlay once; it stays hidden until the
-        /// header's "?" button opens the page of the level the player is on.
-        /// </summary>
+        /// <summary>Builds the non-modal inspection layer above every hub level.</summary>
         private void BuildHelp()
         {
             _help = TscnScenes.LoadAndBuild(HelpScene) as ModHelpPanel;
@@ -157,19 +155,14 @@ namespace Mods.ModManager
 
         private void OnHelpPressed()
         {
-            _help?.Open(CurrentHelpLevel());
-        }
+            if (_help == null)
+                return;
 
-        /// <summary>The help page follows the hub level: the mods grid, an open mod page, the collections gallery or the scheme editor.</summary>
-        private string CurrentHelpLevel()
-        {
-            if (_editorOpen)
-                return "scheme";
-            if (_activeTab == TabCollections)
-                return "collections";
-            if (ModOpen)
-                return "mod_page";
-            return "mods";
+            if (_help.Visible)
+                _help.Close();
+            else
+                _help.Open();
+            _helpButton.ButtonPressed = _help.Visible;
         }
 
         private void BuildBanner()
@@ -265,7 +258,6 @@ namespace Mods.ModManager
             if (_editorOpen && _editor != null)
             {
                 _back.Text = TranslationServer.Translate("mod_manager/hub_back_to_gallery");
-                _back.TooltipText = _back.Text;
                 _title.Text = _editor.CurrentCollectionTitle ?? TranslationServer.Translate("mod_manager/collections_title");
                 _segment.Visible = false;
                 _gallerySearch.Visible = false;
@@ -274,7 +266,6 @@ namespace Mods.ModManager
             }
 
             _back.Text = TranslationServer.Translate(ModOpen ? "mod_manager/hub_back_to_mods" : "mod_manager/hub_back_to_menu");
-            _back.TooltipText = _back.Text;
             _title.Text = TranslationServer.Translate("mod_manager/menu_title");
             _segment.Visible = true;
             _tabMods.ButtonPressed = _activeTab == TabMods;
@@ -406,15 +397,28 @@ namespace Mods.ModManager
 
         /* ═══════════════ Escape chain ═══════════════ */
 
-        /// <summary>Escape walks back one level: editor → gallery → mods tab, mod card → mods grid.</summary>
+        /// <summary>F1 explains the focused control; Escape leaves help before walking back a level.</summary>
         public override void _UnhandledInput(InputEvent @event)
         {
+            if (@event is InputEventKey key && key.Pressed && !key.Echo && key.Keycode == Key.F1)
+            {
+                if (_help != null)
+                {
+                    _help.Open();
+                    _help.ShowFor(GetViewport().GuiGetFocusOwner());
+                    _helpButton.ButtonPressed = true;
+                }
+                GetViewport().SetInputAsHandled();
+                return;
+            }
+
             if (!@event.IsActionPressed("ui_cancel"))
                 return;
 
             if (_help != null && _help.Visible)
             {
                 _help.Close();
+                _helpButton.ButtonPressed = false;
                 GetViewport().SetInputAsHandled();
                 return;
             }

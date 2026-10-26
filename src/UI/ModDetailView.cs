@@ -86,6 +86,8 @@ namespace Mods.ModManager
             _conflictsBox = GetNode<VBoxContainer>("Scroll/Content/ConflictsBox");
             _conflictsText = GetNode<Label>("Scroll/Content/ConflictsBox/Text");
 
+            ModHelpPanel.Attach(_versions, "mod_version");
+
             _versions.ItemSelected += OnVersionSelected;
 
             _author.AddThemeColorOverride("font_color", UiTokens.Muted);
@@ -177,7 +179,7 @@ namespace Mods.ModManager
             }
 
             _versions.Selected = selectedIndex;
-            _versions.TooltipText = _versions.GetItemText(selectedIndex);
+            _versions.TooltipText = TranslationServer.Translate("mod_manager/hint_mod_version_body");
         }
 
         private void BuildActions()
@@ -191,19 +193,21 @@ namespace Mods.ModManager
             var primary = ModActions.GetPrimary(_data);
             if (primary != null)
             {
-                var button = new Button { Text = ModActionNames.Translate(primary.Value), TooltipText = ModActionNames.Translate(primary.Value) };
+                var button = new Button { Text = ModActionNames.Translate(primary.Value) };
                 if (ModActionNames.IsDanger(primary.Value))
                     CthangoverTheme.ApplyDanger(button);
                 else
                     CthangoverTheme.ApplyPrimary(button);
+                ModHelpPanel.Attach(button, "mod_action");
                 button.Pressed += OnPrimaryPressed;
                 _actionsRow.AddChild(button);
             }
 
             if (primary != ModActionKind.Delete && _data.IsDeletable)
             {
-                var delete = new Button { Text = ModActionNames.Translate(ModActionKind.Delete), TooltipText = ModActionNames.Translate(ModActionKind.Delete) };
+                var delete = new Button { Text = ModActionNames.Translate(ModActionKind.Delete) };
                 CthangoverTheme.ApplyDanger(delete);
+                ModHelpPanel.Attach(delete, "mod_delete");
                 delete.Pressed += OnDeletePressed;
                 _actionsRow.AddChild(delete);
             }
@@ -215,14 +219,12 @@ namespace Mods.ModManager
                     Text = ModActionNames.Translate(_data.IsDisabled
                         ? ModActionKind.Enable
                         : ModActionKind.Disable),
-                    TooltipText = ModActionNames.Translate(_data.IsDisabled
-                        ? ModActionKind.Enable
-                        : ModActionKind.Disable),
                 };
                 if (_data.IsDisabled)
                     CthangoverTheme.ApplyPrimary(toggle);
                 else
                     CthangoverTheme.ApplyDanger(toggle);
+                ModHelpPanel.Attach(toggle, "mod_enabled");
                 toggle.Pressed += OnTogglePressed;
                 _actionsRow.AddChild(toggle);
             }
@@ -245,12 +247,12 @@ namespace Mods.ModManager
                 var link = new Button
                 {
                     Text = collectionsText,
-                    TooltipText = collectionsText,
                     FocusMode = FocusModeEnum.None,
                 };
                 link.AddThemeFontSizeOverride("font_size", UiTokens.FontBodySmall);
                 link.AddThemeColorOverride("font_color", UiTokens.TypeTarget);
                 link.AddThemeColorOverride("font_hover_color", UiTokens.TypeTarget);
+                ModHelpPanel.Attach(link, "mod_collections");
                 link.Pressed += () => CollectionsLinkRequested?.Invoke();
                 _actionsRow.AddChild(link);
             }

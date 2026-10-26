@@ -56,8 +56,9 @@ namespace Mods.ModManager
             _statusCaption.Text = TranslationServer.Translate("mod_manager/filter_status");
             _categoryCaption.Text = TranslationServer.Translate("mod_manager/filter_categories");
             _groupToggle.Text = TranslationServer.Translate("mod_manager/group_by_category");
-            _groupToggle.TooltipText = _groupToggle.Text;
             _groupToggle.ButtonPressed = _state.GroupByCategory;
+            ModHelpPanel.Attach(_reset, "filters_reset");
+            ModHelpPanel.Attach(_groupToggle, "group_categories");
 
             _statusCaption.AddThemeColorOverride("font_color", UiTokens.Muted);
             _categoryCaption.AddThemeColorOverride("font_color", UiTokens.Muted);
@@ -80,14 +81,12 @@ namespace Mods.ModManager
             {
                 var count = statusCounts.GetValueOrDefault(pair.Key);
                 pair.Value.Text = $"{ModStatusNames.Translate(pair.Key)} ({count})";
-                pair.Value.TooltipText = pair.Value.Text;
             }
 
             foreach (var pair in _categoryBoxes)
             {
                 var count = categoryCounts.GetValueOrDefault(pair.Key);
                 pair.Value.Text = $"{ModCategoryNames.Translate(pair.Key)} ({count})";
-                pair.Value.TooltipText = pair.Value.Text;
             }
         }
 

@@ -76,12 +76,18 @@ namespace Mods.ModManager
             _source.MouseFilter = Control.MouseFilterEnum.Pass;
             AddThemeStyleboxOverride("panel", ModManagerTheme.CreateCardStyle(data.IsConflict));
 
+            ModHelpPanel.Attach(this, "mod_card");
+            ModHelpPanel.Attach(_versions, "mod_version");
+            ModHelpPanel.Attach(_action, "mod_action");
+            ModHelpPanel.Attach(_enabled, "mod_enabled");
+
             _versions.ItemSelected += OnVersionSelected;
             _action.Pressed += OnActionPressed;
             _enabled.Toggled += OnEnabledPressed;
             GuiInput += OnGuiInput;
 
             BuildCollectionsLink();
+            ModHelpPanel.Attach(_collectionsLink, "mod_collections");
             PopulateVersions();
             RefreshState();
             LoadPreview();
@@ -138,7 +144,7 @@ namespace Mods.ModManager
             {
                 _versions.AddItem("v" + (_data.LocalVersion ?? "—"));
                 _versions.Disabled = true;
-                _versions.TooltipText = _versions.GetItemText(0);
+                _versions.TooltipText = TranslationServer.Translate("mod_manager/hint_mod_version_body");
                 return;
             }
 
@@ -164,9 +170,9 @@ namespace Mods.ModManager
             }
 
             _versions.Selected = selectedIndex;
-            // "v1.2.0 · latest · installed" does not fit the narrow combo: it ends in an
-            // ellipsis (clip_text in the scene), the full label is in the tooltip.
-            _versions.TooltipText = _versions.GetItemText(selectedIndex);
+            // The combo clips its long version label, so its tooltip explains
+            // the version markers instead of repeating the truncated caption.
+            _versions.TooltipText = TranslationServer.Translate("mod_manager/hint_mod_version_body");
         }
 
         /// <summary>
@@ -200,7 +206,6 @@ namespace Mods.ModManager
             var text = ModCollectionLinks.BadgeText(_data.CollectionsCount);
             _collectionsLink.Visible = text.Length > 0;
             _collectionsLink.Text = text;
-            _collectionsLink.TooltipText = text;
         }
 
         private void UpdateActionButton()
@@ -214,7 +219,6 @@ namespace Mods.ModManager
 
             _action.Visible = true;
             _action.Text = ModActionNames.Translate(kind.Value);
-            _action.TooltipText = _action.Text;
 
             if (ModActionNames.IsDanger(kind.Value))
                 CthangoverTheme.ApplyDanger(_action);
@@ -232,8 +236,8 @@ namespace Mods.ModManager
             _enabled.ButtonPressed = !_data.IsDisabled;
             _updatingEnabled = false;
             _enabled.TooltipText = TranslationServer.Translate(_data.IsDisabled
-                ? "mod_manager/action_enable"
-                : "mod_manager/action_disable");
+                ? "mod_manager/enable_tooltip"
+                : "mod_manager/disable_tooltip");
         }
 
         private void LoadPreview()
@@ -291,7 +295,7 @@ namespace Mods.ModManager
                 return;
 
             _data.SelectedDownload = _data.Downloads[(int)index];
-            _versions.TooltipText = _versions.GetItemText((int)index);
+            _versions.TooltipText = TranslationServer.Translate("mod_manager/hint_mod_version_body");
             _data.RecomputeStatus();
             RefreshState();
             VersionChanged?.Invoke(_data);

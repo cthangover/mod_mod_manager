@@ -117,7 +117,6 @@ namespace Mods.ModManager
             _bannerLabel = GetNode<Label>("Margin/Root/Banner/BannerLabel");
 
             close.Text = TranslationServer.Translate("mod_manager/back");
-            close.TooltipText = close.Text;
             title.Text = TranslationServer.Translate("mod_manager/title");
             if (Embedded)
             {
@@ -127,9 +126,7 @@ namespace Mods.ModManager
                 title.Visible = false;
             }
             _search.PlaceholderText = TranslationServer.Translate("mod_manager/search_placeholder");
-            _search.TooltipText = _search.PlaceholderText;
             _refreshButton.Text = TranslationServer.Translate("mod_manager/refresh");
-            _refreshButton.TooltipText = _refreshButton.Text;
             _resultLabel.AddThemeColorOverride("font_color", UiTokens.Muted);
 
             _sort.AddItem(TranslationServer.Translate("mod_manager/sort_name"));
@@ -137,6 +134,9 @@ namespace Mods.ModManager
             _sort.AddItem(TranslationServer.Translate("mod_manager/sort_status"));
             _sort.Selected = (int)_filter.Sort;
             _sort.TooltipText = TranslationServer.Translate("mod_manager/sort_tooltip");
+            ModHelpPanel.Attach(_search, "mod_search");
+            ModHelpPanel.Attach(_sort, "mod_sort");
+            ModHelpPanel.Attach(_refreshButton, "refresh");
 
             _bannerPanel.AddThemeStyleboxOverride("panel", ModManagerTheme.MakeBox(
                 UiTokens.Alpha(UiTokens.Warning, 0.15f),
