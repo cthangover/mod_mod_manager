@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Cthangover.Core.UI.Theming;
 using Godot;
 
@@ -38,6 +39,12 @@ namespace Mods.ModManager
         private Label _usedByText;
         private VBoxContainer _conflictsBox;
         private Label _conflictsText;
+        private VBoxContainer _documentationBox;
+        private OptionButton _documentationLanguages;
+        private Label _documentationSource;
+        private ModMarkdownView _documentationBody;
+        private IReadOnlyList<ModDocument> _documents = Array.Empty<ModDocument>();
+        private string _documentationLanguage;
 
         /// <summary>Raised when the primary contextual action is pressed.</summary>
         public event Action<ModCardData> ActionPressed;
@@ -57,8 +64,17 @@ namespace Mods.ModManager
         /// <summary>Displays the given mod; call again with refreshed data after actions.</summary>
         public void Open(ModCardData data)
         {
+            if (_data?.MatchKey != data?.MatchKey)
+                _documentationLanguage = null;
             _data = data;
+            _documents = ModDocumentation.Discover(data?.LocalInfo?.FileProvider);
             Rebuild();
+        }
+
+        public override void _Notification(int what)
+        {
+            if (what == NotificationTranslationChanged && _nodesReady)
+                BuildDocumentation();
         }
 
         private void EnsureNodes()
@@ -85,6 +101,14 @@ namespace Mods.ModManager
             _usedByText = GetNode<Label>("Scroll/Content/UsedByBox/Text");
             _conflictsBox = GetNode<VBoxContainer>("Scroll/Content/ConflictsBox");
             _conflictsText = GetNode<Label>("Scroll/Content/ConflictsBox/Text");
+            _documentationBox = GetNode<VBoxContainer>("Scroll/Content/DocumentationBox");
+            _documentationLanguages = GetNode<OptionButton>("Scroll/Content/DocumentationBox/Header/Languages");
+            _documentationSource = GetNode<Label>("Scroll/Content/DocumentationBox/Source");
+            _documentationBody = GetNode<ModMarkdownView>("Scroll/Content/DocumentationBox/Body");
+            _documentationLanguages.ItemSelected += OnDocumentationLanguageSelected;
+            _documentationLanguages.TooltipText = TranslationServer.Translate("mod_manager/hint_docs_language_body");
+            ModHelpPanel.Attach(_documentationLanguages, "docs_language");
+            _documentationSource.AddThemeColorOverride("font_color", UiTokens.Muted);
 
             ModHelpPanel.Attach(_versions, "mod_version");
 
@@ -143,12 +167,51 @@ namespace Mods.ModManager
             BuildConflictBox();
 
             _descriptionText.Text = NullIfEmpty(_data.Description) ?? "—";
+            BuildDocumentation();
             _changelogText.Text = NullIfEmpty(_data.SelectedDownload?.Changelog) ?? "—";
             SetOptional(_dependsBox, _dependsText, JoinOrEmpty(ModQueries.GetDependencies(_data)));
             SetOptional(_usedByBox, _usedByText, JoinOrEmpty(ModQueries.GetDependents(_data.Id)));
             SetOptional(_conflictsBox, _conflictsText, JoinOrEmpty(ModQueries.GetConflicts(_data)));
 
             LoadCover();
+        }
+
+        private void BuildDocumentation()
+        {
+            _documentationBox.Visible = _documents.Count > 0;
+            _documentationBody.Display(null, null);
+            if (_documents.Count == 0 || _data == null)
+                return;
+
+            SetCaption("Scroll/Content/DocumentationBox/Header/Caption", "mod_manager/documentation");
+            _documentationLanguages.TooltipText = TranslationServer.Translate("mod_manager/hint_docs_language_body");
+            _documentationLanguages.Clear();
+            _documentationLanguages.AddItem(TranslationServer.Translate("mod_manager/docs_auto"));
+            var selected = 0;
+            for (var i = 0; i < _documents.Count; i++)
+            {
+                var language = _documents[i].Language;
+                _documentationLanguages.AddItem(language == "default"
+                    ? TranslationServer.Translate("mod_manager/docs_default").ToString() : language.ToUpperInvariant());
+                if (language == _documentationLanguage)
+                    selected = i + 1;
+            }
+            _documentationLanguages.Selected = selected;
+            var requested = selected == 0 ? TranslationServer.GetLocale() : _documentationLanguage;
+            var document = ModDocumentation.Select(_documents, requested);
+            _documentationSource.Text = string.Format(TranslationServer.Translate("mod_manager/docs_source"),
+                _data.LocalVersion ?? "—", document.Language.ToUpperInvariant());
+            if (!string.IsNullOrEmpty(_data.SelectedDownload?.Version) && _data.SelectedDownload.Version != _data.LocalVersion)
+                _documentationSource.Text += "\n" + TranslationServer.Translate("mod_manager/docs_installed_notice");
+            _documentationBody.Display(_data.LocalInfo?.FileProvider, document);
+        }
+
+        private void OnDocumentationLanguageSelected(long index)
+        {
+            if (index < 0 || index > _documents.Count)
+                return;
+            _documentationLanguage = index == 0 ? null : _documents[(int)index - 1].Language;
+            BuildDocumentation();
         }
 
         private void PopulateVersions()

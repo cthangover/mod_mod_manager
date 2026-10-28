@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="src/UI/ModDetailView.cs" id="1_detail"]
+[ext_resource type="Script" path="src/UI/ModMarkdownView.cs" id="2_markdown"]
 
 [node name="ModDetailView" type="VBoxContainer"]
 theme_override_constants/separation = 8
@@ -123,6 +124,35 @@ theme_override_font_sizes/font_size = 12
 [node name="Text" type="Label" parent="Scroll/Content/DescriptionBox"]
 layout_mode = 2
 autowrap_mode = 3
+
+[node name="DocumentationBox" type="VBoxContainer" parent="Scroll/Content"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="Scroll/Content/DocumentationBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Caption" type="Label" parent="Scroll/Content/DocumentationBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Languages" type="OptionButton" parent="Scroll/Content/DocumentationBox/Header"]
+layout_mode = 2
+
+[node name="Source" type="Label" parent="Scroll/Content/DocumentationBox"]
+layout_mode = 2
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 12
+
+[node name="Body" type="RichTextLabel" parent="Scroll/Content/DocumentationBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+fit_content = true
+scroll_active = false
+selection_enabled = true
+script = ExtResource("2_markdown")
 
 [node name="ChangelogBox" type="VBoxContainer" parent="Scroll/Content"]
 layout_mode = 2

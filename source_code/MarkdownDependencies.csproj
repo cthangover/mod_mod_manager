@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Rebuild the bundled parser with: dotnet build source_code/MarkdownDependencies.csproj.
+         Its BSD license is shipped alongside dll/Markdig.dll. No kernel dependency is needed. -->
+    <PackageReference Include="Markdig" Version="0.37.0" GeneratePathProperty="true" />
+  </ItemGroup>
+  <Target Name="CopyParser" AfterTargets="Build">
+    <Copy SourceFiles="$(PkgMarkdig)/lib/net6.0/Markdig.dll" DestinationFolder="../dll" />
+  </Target>
+</Project>

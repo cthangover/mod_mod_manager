@@ -1,0 +1,4 @@
+{
+  "name": "Mod documentation test",
+  "sources": ["src/*.cs"]
+}
