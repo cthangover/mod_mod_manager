@@ -46,6 +46,7 @@ namespace Mods.ModManager
         private Label _modsCount;
         private Label _dirty;
         private Button _json;
+        private Button _gameSettings;
         private Button _reset;
         private Button _save;
         private Label _bannerLabel;
@@ -437,6 +438,10 @@ namespace Mods.ModManager
             _modsCount = GetNode<Label>("Margin/Root/Header/ModsCount");
             _dirty = GetNode<Label>("Margin/Root/Header/Dirty");
             _json = GetNode<Button>("Margin/Root/Header/Json");
+            _gameSettings = GetNode<Button>("Margin/Root/Tools/GameSettings");
+            _gameSettings.Text = TranslationServer.Translate("mod_manager/game_settings_title");
+            _gameSettings.TooltipText = TranslationServer.Translate("mod_manager/game_settings_hint");
+            ModHelpPanel.Attach(_gameSettings, "game_settings");
             _reset = GetNode<Button>("Margin/Root/Header/Reset");
             _save = GetNode<Button>("Margin/Root/Header/Save");
             _bannerPanel = GetNode<PanelContainer>("Margin/Root/Banner");
@@ -638,6 +643,7 @@ namespace Mods.ModManager
             _pillProblems.Pressed += () => SelectTab("problems");
             _pillPlan.Pressed += () => SelectTab("plan");
             _json.Pressed += OpenJsonDialog;
+            _gameSettings.Pressed += OpenGameSettings;
             _reset.Pressed += ResetDrafts;
             _save.Pressed += OpenSaveDialog;
             _gameSelect.ItemSelected += OnGameSelected;
@@ -1820,6 +1826,30 @@ namespace Mods.ModManager
             if (!mechanic.Mods.Any(m => string.Equals(ParseModId(m), choice.Id, StringComparison.OrdinalIgnoreCase)))
                 mechanic.Mods.Add(choice.Id);
 
+            Rebuild();
+        }
+
+        private void OpenGameSettings()
+        {
+            var collection = EffectiveCollection(_currentId);
+            if (collection == null)
+                return;
+            var discovered = ModRegistry.Instance.AllDiscoveredMods;
+            var ordered = ModRegistry.Instance.GetOrderedModIds(false).Where(discovered.ContainsKey).Select(id => discovered[id]);
+            var available = Resolve().Nodes.Where(n => n.State == ModCollectionNodeState.Installed).Select(n => n.ModId);
+            var catalog = new CollectionSettingsCatalog(ordered, available, TranslationServer.GetLocale());
+            var dialog = new CollectionSettingsDialog();
+            AddChild(dialog);
+            dialog.Initialize(catalog, collection.Settings, ApplyGameSettings);
+            dialog.PopupCenteredClamped(new Vector2I(760, 660), 0.9f);
+        }
+
+        private void ApplyGameSettings(Dictionary<string, string> settings)
+        {
+            var current = EffectiveCollection(_currentId)?.Settings;
+            if ((current?.Count ?? 0) == settings.Count && settings.All(p => current != null && current.TryGetValue(p.Key, out var value) && value == p.Value))
+                return;
+            Draft(_currentId).Settings = settings.Count == 0 ? null : settings;
             Rebuild();
         }
 

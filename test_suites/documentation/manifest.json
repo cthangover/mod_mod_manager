@@ -1,4 +1,5 @@
 {
   "name": "Mod documentation test",
+  "depends": ["menu_base>=1"],
   "sources": ["src/*.cs"]
 }

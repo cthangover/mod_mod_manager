@@ -21,6 +21,7 @@ namespace Mods.ModManager
     public partial class ModCard : PanelContainer
     {
         private ModCardData _data;
+        private Texture2D _ownedPreview;
         private TextureRect _image;
         private Label _title;
         private Label _author;
@@ -242,18 +243,30 @@ namespace Mods.ModManager
 
         private void LoadPreview()
         {
+            ReleasePreview();
             if (_data.LocalInfo != null)
             {
                 var local = ModPreviewLoader.LoadLocal(_data.LocalInfo);
                 if (local != null)
                 {
-                    _image.Texture = local;
+                    _image.Texture = _ownedPreview = local;
                     return;
                 }
             }
 
             if (_data.Catalog != null)
                 ModPreviewLoader.LoadRemote(_data.Id, _data.Catalog.IconUrl, OnRemotePreviewLoaded);
+        }
+
+        /// <summary>Local previews are decoded for this view; remote previews belong to the shared icon cache.</summary>
+        public override void _ExitTree() => ReleasePreview();
+
+        private void ReleasePreview()
+        {
+            if (GodotObject.IsInstanceValid(_image))
+                _image.Texture = null;
+            _ownedPreview?.Dispose();
+            _ownedPreview = null;
         }
 
         private void OnRemotePreviewLoaded(Texture2D texture)

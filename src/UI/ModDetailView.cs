@@ -19,6 +19,7 @@ namespace Mods.ModManager
     public partial class ModDetailView : VBoxContainer
     {
         private ModCardData _data;
+        private Texture2D _ownedPreview;
         private bool _nodesReady;
 
         private TextureRect _coverImage;
@@ -338,6 +339,7 @@ namespace Mods.ModManager
 
         private void LoadCover()
         {
+            ReleasePreview();
             _coverImage.Texture = null;
 
             if (_data.LocalInfo != null)
@@ -345,13 +347,24 @@ namespace Mods.ModManager
                 var local = ModPreviewLoader.LoadLocal(_data.LocalInfo);
                 if (local != null)
                 {
-                    _coverImage.Texture = local;
+                    _coverImage.Texture = _ownedPreview = local;
                     return;
                 }
             }
 
             if (_data.Catalog != null)
                 ModPreviewLoader.LoadRemote(_data.Id, _data.Catalog.IconUrl, OnRemotePreviewLoaded);
+        }
+
+        /// <summary>Local previews are decoded for this view; remote previews belong to the shared icon cache.</summary>
+        public override void _ExitTree() => ReleasePreview();
+
+        private void ReleasePreview()
+        {
+            if (GodotObject.IsInstanceValid(_coverImage))
+                _coverImage.Texture = null;
+            _ownedPreview?.Dispose();
+            _ownedPreview = null;
         }
 
         private void OnRemotePreviewLoaded(Texture2D texture)

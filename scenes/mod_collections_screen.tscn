@@ -120,6 +120,9 @@ theme_override_constants/separation = 8
 layout_mode = 2
 text = "mod_manager/collection_add_mod"
 
+[node name="GameSettings" type="Button" parent="Margin/Root/Tools"]
+layout_mode = 2
+
 [node name="Search" type="LineEdit" parent="Margin/Root/Tools"]
 custom_minimum_size = Vector2(170, 0)
 layout_mode = 2

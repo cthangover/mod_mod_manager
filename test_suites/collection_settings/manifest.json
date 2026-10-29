@@ -1,0 +1,4 @@
+{
+  "name": "Collection settings UI test",
+  "sources": ["src/*.cs"]
+}

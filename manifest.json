@@ -3,7 +3,7 @@
   "name": "Mod Manager",
   "version": "1.0.0",
   "author": "ct",
-  "description": "Nexus-style mod manager: browse the catalog, filter by category and status, install, update and remove mods.",
+  "description": "The Mods & Collections screen: what is installed, what each mod does, installing and updating from the online catalog, and which mods make up each ready-made game.",
   "category": "tools, ui",
   "sources": [
     "src/**/*.cs"
@@ -19,6 +19,7 @@
   ],
   "test_suites": [
     { "id": "help", "activate": ["--itest=mod_help"] },
-    { "id": "documentation", "activate": ["--itest=mod_documentation"] }
+    { "id": "documentation", "activate": ["--itest=mod_documentation"] },
+    { "id": "collection_settings", "activate": ["--itest=collection_settings"] }
   ]
 }
