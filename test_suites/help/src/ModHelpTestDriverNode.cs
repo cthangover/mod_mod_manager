@@ -697,7 +697,7 @@ namespace Mods.ModManagerHelpTest
             GameLogger.Log("TEST", $"[TEST_RESULT] name=mod_help passed={passed} failed={failures.Count}");
             foreach (var failure in failures)
                 GameLogger.Log("TEST", $"ModHelpTest: failure: {failure}", LogLevel.Error);
-            GetTree().Quit(failures.Count == 0 ? 0 : 1);
+            Cthangover.Core.Bootstrap.ApplicationExit.Quit(GetTree(), failures.Count == 0 ? 0 : 1);
         }
     }
 }

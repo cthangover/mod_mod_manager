@@ -296,7 +296,7 @@ namespace Mods.ModManager.DocumentationTest
             if (failure != null)
                 GameLogger.Log("TEST", "Documentation: " + failure, LogLevel.Error);
             GameLogger.Log("TEST", $"[TEST_RESULT] name=mod_documentation passed={passed} failed={(failure == null ? 0 : 1)}");
-            GetTree().Quit(failure == null ? 0 : 1);
+            Cthangover.Core.Bootstrap.ApplicationExit.Quit(GetTree(), failure == null ? 0 : 1);
         }
     }
 }

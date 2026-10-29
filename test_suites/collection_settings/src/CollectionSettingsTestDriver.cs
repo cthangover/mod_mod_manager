@@ -186,7 +186,7 @@ namespace Mods.ModManager.SettingsTest
             if (failure != null)
                 GameLogger.Log("TEST", "Collection settings: " + failure, LogLevel.Error);
             GameLogger.Log("TEST", $"[TEST_RESULT] name=collection_settings passed={passed} failed={(failure == null ? 0 : 1)}");
-            GetTree().Quit(failure == null ? 0 : 1);
+            Cthangover.Core.Bootstrap.ApplicationExit.Quit(GetTree(), failure == null ? 0 : 1);
         }
 
         /// <summary>Also remove the owned fixture when the suite exits before Finish.</summary>
