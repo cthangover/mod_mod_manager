@@ -72,6 +72,10 @@ Otros botones del esquema: **+ Mecánica** y **Añadir mod** cambian el juego, *
 
 Los cambios de un juego se aplican la próxima vez que arranque. Las partidas siguen sirviendo cuando cambian sus mods: los datos de los mods que salieron del juego se guardan aparte y vuelven con el mod.
 
+### Crear un mod y elegir el inicio
+
+La fila de herramientas de un juego tiene **Nuevo mod** y **Escena inicial**. **Nuevo mod** pide un título, un identificador (sigue al título hasta que escribas uno), una descripción, la base (mundo RPG o diálogos y escenas) y el juego al que se une. Escribe una carpeta de archivos sencillos en la carpeta de mods — `manifest.json`, un esbozo `locale/` con el título y las carpetas vacías `scenes/`, `scenarios/` y `src/` — y añade el mod al juego como bloque propio. No se crea ningún repositorio. **Escena inicial** lista las escenas que definen los mods instalados del juego y fija dónde empieza una partida nueva; **Guardar** lo conserva. El mod y el inicio se aplican en el próximo arranque. La ventana de traducciones completa los títulos en otros idiomas.
+
 ## Si algo falla
 
 1. **Un mod no aparece en un juego.** Comprueba que está activado y que la colección del juego lo incluye (abre **Editar esquema**).

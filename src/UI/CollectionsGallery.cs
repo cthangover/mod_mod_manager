@@ -39,7 +39,7 @@ namespace Mods.ModManager
         public event Action<string> StatusMessage;
 
         private VBoxContainer _host;
-        private HFlowContainer _grid;
+        private GridContainer _grid;
         private VBoxContainer _emptyBox;
         private Label _emptyHint;
 
@@ -159,12 +159,23 @@ namespace Mods.ModManager
 
         private void BuildGrid()
         {
-            _grid = new HFlowContainer();
+            _grid = new GridContainer { Columns = 1 };
+            Resized += ResizeGrid;
+            GetVScrollBar().VisibilityChanged += ResizeGrid;
             _grid.AddThemeConstantOverride("h_separation", UiTokens.Space5);
             _grid.AddThemeConstantOverride("v_separation", UiTokens.Space5);
-            _grid.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            _grid.SizeFlagsHorizontal = SizeFlags.ShrinkBegin;
             _grid.SizeFlagsVertical = SizeFlags.ExpandFill;
             _host.AddChild(_grid);
+        }
+
+        private void ResizeGrid()
+        {
+            var available = Math.Max(440, Size.X - UiTokens.Space8 * 2 - (GetVScrollBar().Visible ? GetVScrollBar().Size.X : 0));
+            var columns = Math.Max(1, (int)((available + UiTokens.Space5) / (440 + UiTokens.Space5)));
+            var width = Mathf.Floor((available - (columns - 1) * UiTokens.Space5) / columns);
+            _grid.Columns = columns;
+            foreach (var card in _grid.GetChildren().OfType<Control>()) card.CustomMinimumSize = new Vector2(width, 280);
         }
 
         private void BuildEmptyState()
@@ -197,6 +208,7 @@ namespace Mods.ModManager
 
             foreach (var summary in items)
                 _grid.AddChild(BuildCard(summary));
+            ResizeGrid();
         }
 
         private List<ModCollectionGameSummary> Filtered()
@@ -229,7 +241,7 @@ namespace Mods.ModManager
 
         private Control BuildCard(ModCollectionGameSummary summary)
         {
-            var card = new PanelContainer { CustomMinimumSize = new Vector2(360, 0) };
+            var card = new PanelContainer { CustomMinimumSize = new Vector2(440, 280), SizeFlagsHorizontal = SizeFlags.ExpandFill, SizeFlagsVertical = SizeFlags.Fill };
             card.AddThemeStyleboxOverride("panel", UiKit.Frame(UiTokens.RadiusLg, UiTokens.Surface2, UiTokens.Line));
 
             var column = UiKit.Column(UiTokens.Space3);
@@ -240,8 +252,16 @@ namespace Mods.ModManager
             top.AddChild(BuildCover(summary.Name ?? summary.Collection.Id));
             var headColumn = UiKit.Column(2);
             headColumn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            headColumn.AddChild(UiKit.Label(summary.Name ?? summary.Collection.Id, UiTokens.FontBodyLarge, UiTokens.InkBright));
-            headColumn.AddChild(UiKit.Label(BuildSubtitle(summary), UiTokens.FontTiny, UiTokens.Faint));
+            var title = UiKit.Label(summary.Name ?? summary.Collection.Id, UiTokens.FontBodyLarge, UiTokens.InkBright);
+            title.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+            title.TooltipText = title.Text;
+            title.MouseFilter = MouseFilterEnum.Pass;
+            headColumn.AddChild(title);
+            var subtitle = UiKit.Label(BuildSubtitle(summary), UiTokens.FontTiny, UiTokens.Faint);
+            subtitle.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+            subtitle.TooltipText = subtitle.Text;
+            subtitle.MouseFilter = MouseFilterEnum.Pass;
+            headColumn.AddChild(subtitle);
             top.AddChild(headColumn);
             column.AddChild(top);
 
@@ -249,6 +269,12 @@ namespace Mods.ModManager
                 string.IsNullOrEmpty(summary.Description) ? "—" : summary.Description,
                 UiTokens.FontBodySmall, UiTokens.Muted);
             description.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+            description.CustomMinimumSize = new Vector2(0, 72);
+            description.SizeFlagsVertical = SizeFlags.ExpandFill;
+            description.MaxLinesVisible = 4;
+            description.TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis;
+            description.TooltipText = description.Text;
+            description.MouseFilter = MouseFilterEnum.Pass;
             column.AddChild(description);
 
             var badges = UiKit.Row(UiTokens.Space1);
@@ -256,12 +282,11 @@ namespace Mods.ModManager
                 badges.AddChild(UiKit.Badge(text, color));
             column.AddChild(badges);
 
-            if (summary.TotalMods > 0)
             {
                 var progress = new ProgressBar
                 {
                     MaxValue = 100,
-                    Value = 100f * summary.InstalledCount / summary.TotalMods,
+                    Value = summary.TotalMods > 0 ? 100f * summary.InstalledCount / summary.TotalMods : 0,
                     ShowPercentage = false,
                     CustomMinimumSize = new Vector2(0, 6),
                 };

@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using Cthangover.Core.Mods;
-using Cthangover.Core.Utils;
-
 namespace Mods.ModManager
 {
+    using System.Collections.Generic;
+    using Cthangover.Core.Mods;
+    using Cthangover.Core.Utils;
+
     /// <summary>
     /// One row of the mod manager grid: everything the tile and the detail page
     /// need to render a mod, regardless of whether it exists locally, in the
@@ -54,6 +54,9 @@ namespace Mods.ModManager
         /// <summary>True for the mod manager itself, which cannot be disabled or deleted.</summary>
         public bool IsProtected { get; set; }
 
+        /// <summary>Unavailable local archive; filename/path identity exists even when its manifest is encrypted.</summary>
+        public UnavailableModArchive UnavailableArchive { get; set; }
+
         /// <summary>Derived tile state; see <see cref="RecomputeStatus"/>.</summary>
         public ModItemStatus Status { get; set; }
 
@@ -90,10 +93,10 @@ namespace Mods.ModManager
         /// Identity of a card across model reloads: the mod id plus the catalog
         /// variant it represents. Needed because conflicting variants share an id.
         /// </summary>
-        public string MatchKey => $"{Id}|{PrimarySource ?? string.Empty}";
+        public string MatchKey => UnavailableArchive != null ? "archive|" + UnavailableArchive.Path : $"{Id}|{PrimarySource ?? string.Empty}";
 
         /// <summary>True when the tile should show the enable/disable switch.</summary>
-        public bool CanToggleEnabled => IsInstalled && !IsProtected;
+        public bool CanToggleEnabled => IsInstalled && !IsProtected && UnavailableArchive == null;
 
         /// <summary>Version to display next to the title: installed version or newest catalog version.</summary>
         public string DisplayVersion => !string.IsNullOrEmpty(LocalVersion)
@@ -108,6 +111,11 @@ namespace Mods.ModManager
         /// </summary>
         public void RecomputeStatus()
         {
+            if (UnavailableArchive != null)
+            {
+                Status = UnavailableArchive.NeedsPassword ? ModItemStatus.PasswordRequired : ModItemStatus.ArchiveError;
+                return;
+            }
             if (!IsInstalled)
             {
                 Status = ModItemStatus.NotInstalled;

@@ -15,6 +15,9 @@ namespace Mods.ModManager
             if (data == null)
                 return null;
 
+            if (data.UnavailableArchive != null)
+                return ModActionKind.UnlockArchive;
+
             if (!data.IsInstalled)
                 return data.HasRemote ? ModActionKind.Install : null;
 

@@ -1,10 +1,10 @@
-using System;
-using System.Collections.Generic;
-using Cthangover.Core.Mods;
-using Godot;
-
 namespace Mods.ModManager
 {
+    using System;
+    using System.Collections.Generic;
+    using Cthangover.Core.Mods;
+    using Godot;
+
     /// <summary>
     /// Merges everything known about mods into the manager's grid model: local
     /// mods discovered by <see cref="ModRegistry"/> (with enable state and
@@ -64,6 +64,21 @@ namespace Mods.ModManager
                 {
                     _items.Add(BuildLocalCard(id, modInfo, isDisabled, null));
                 }
+            }
+
+            foreach (var archive in ArchiveUnlockService.Default.GetUnavailable())
+            {
+                var data = new ModCardData
+                {
+                    Id = System.IO.Path.GetFileNameWithoutExtension(archive.Path),
+                    Title = archive.Name,
+                    Description = TranslationServer.Translate("mod_manager/archive_locked_description"),
+                    IsInstalled = true,
+                    UnavailableArchive = archive,
+                    Category = CategoryType.Other,
+                };
+                data.RecomputeStatus();
+                _items.Add(data);
             }
 
             foreach (var pair in variantsById)

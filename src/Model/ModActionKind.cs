@@ -8,8 +8,11 @@ namespace Mods.ModManager
     /// </summary>
     public enum ModActionKind
     {
+        /// <summary>Enter a password and retry discovery without restarting the process.</summary>
+        UnlockArchive = 7,
+
         /// <summary>Download and install the selected catalog version.</summary>
-        Install,
+        Install = 0,
 
         /// <summary>Install a newer catalog version over the local copy.</summary>
         Update,

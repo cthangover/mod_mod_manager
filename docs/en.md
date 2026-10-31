@@ -72,6 +72,10 @@ Other buttons of the scheme: **+ Mechanic** and **Add mod** change the game, **D
 
 Changes to a game apply the next time it starts. Saves of a game remain usable when its mods change: data of mods that left the game is kept aside and comes back with the mod.
 
+### Make a mod and choose the start
+
+The tools row of a game has **New mod** and **Start scene**. **New mod** asks for a title, an id (it follows the title until you type one), a description, the base mod (RPG world or dialogs and scenes) and the game it joins. It writes a folder of plain files in the mods folder — `manifest.json`, a `locale/` stub with the title, and empty `scenes/`, `scenarios/` and `src/` folders — and adds the mod to the game as its own block. No repository is created. **Start scene** lists the scenes that the game's installed mods define and sets where a new game starts; **Save** keeps it. The mod and the start take effect at the next launch. Use the translations window to fill in the titles in other languages.
+
 ## If something goes wrong
 
 1. **A mod does not appear in a game.** Check that it is enabled and that the game's collection includes it (open **Edit scheme**).

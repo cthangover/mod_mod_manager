@@ -1,7 +1,7 @@
-using Godot;
-
 namespace Mods.ModManager
 {
+    using Godot;
+
     /// <summary>Locale keys and styling hints for <see cref="ModActionKind"/>.</summary>
     public static class ModActionNames
     {
@@ -12,6 +12,7 @@ namespace Mods.ModManager
         /// <summary>Translation key of an action.</summary>
         public static string Key(ModActionKind kind) => kind switch
         {
+            ModActionKind.UnlockArchive => "mod_manager/action_unlock_archive",
             ModActionKind.Install => "mod_manager/action_install",
             ModActionKind.Update => "mod_manager/action_update",
             ModActionKind.Downgrade => "mod_manager/action_downgrade",

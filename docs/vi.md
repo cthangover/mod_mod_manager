@@ -72,6 +72,10 @@ Các nút khác của sơ đồ: **+ Cơ chế** và **Thêm mod** thay đổi g
 
 Thay đổi với một game được áp dụng vào lần chạy tiếp theo. Bản lưu của game vẫn dùng được khi mod thay đổi: dữ liệu của mod rời khỏi game được giữ riêng và quay lại cùng với mod.
 
+### Tạo mod và chọn cảnh bắt đầu
+
+Thanh công cụ của một trò chơi có **Mod mới** và **Cảnh bắt đầu**. **Mod mới** hỏi tiêu đề, mã định danh (theo tiêu đề cho đến khi bạn tự nhập), mô tả, nền tảng (thế giới RPG hoặc hội thoại và cảnh) và trò chơi sẽ tham gia. Nó ghi vào thư mục mod các tệp thường — `manifest.json`, phần khởi tạo `locale/` có tiêu đề và các thư mục rỗng `scenes/`, `scenarios/`, `src/` — rồi thêm mod vào trò chơi như một khối riêng. Không tạo kho mã. **Cảnh bắt đầu** liệt kê các cảnh do mod đã cài của trò chơi định nghĩa và đặt nơi ván chơi mới bắt đầu; **Lưu** để giữ lại. Mod và cảnh bắt đầu có hiệu lực ở lần khởi động tới. Tiêu đề bằng ngôn ngữ khác được điền trong cửa sổ bản dịch.
+
 ## Khi có trục trặc
 
 1. **Một mod không xuất hiện trong game.** Kiểm tra nó đã bật chưa và bộ sưu tập của game có chứa nó không (mở **Sửa sơ đồ**).

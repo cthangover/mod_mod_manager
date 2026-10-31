@@ -9,8 +9,13 @@ namespace Mods.ModManager
     /// </summary>
     public enum ModItemStatus
     {
+        /// <summary>Local package needs a password before its manifest/content can be read.</summary>
+        PasswordRequired = 6,
+        /// <summary>Local archive could not be read; the player can retry opening it.</summary>
+        ArchiveError = 7,
+
         /// <summary>No local copy exists; only the catalog entry is shown.</summary>
-        NotInstalled,
+        NotInstalled = 0,
 
         /// <summary>Installed and up-to-date with the selected catalog version (or no catalog entry).</summary>
         Installed,

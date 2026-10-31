@@ -1,0 +1,5 @@
+{
+  "name": "New Mod Launch Test",
+  "description": "Run after new_mod: starts the fixture game new_mod_itest_game with --new; the wizard's mod must be loaded and the start scene picked in the editor must be the scene New game starts in. Then the fixture collection and the mod folder that new_mod made are removed. Activated by --itest=new_mod_check with --game=new_mod_itest_game --new.",
+  "sources": ["src/*.cs"]
+}

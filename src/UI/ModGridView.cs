@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using Cthangover.Core.Mods;
-using Cthangover.Core.Scenes;
-using Cthangover.Core.UI.Theming;
-using Cthangover.Core.Utils;
-using Godot;
-
-using Cthangover.Mods.Interface.Theming;
 namespace Mods.ModManager
 {
+    using System;
+    using System.Collections.Generic;
+    using Cthangover.Core.Mods;
+    using Cthangover.Core.Scenes;
+    using Cthangover.Core.UI.Theming;
+    using Cthangover.Core.Utils;
+    using Godot;
+    using Cthangover.Mods.Interface.Theming;
+
     /// <summary>
     /// Scrollable grid of <see cref="ModCard"/> tiles, composed of
     /// <see cref="ModGridGroup"/> sections (see
@@ -47,7 +47,10 @@ namespace Mods.ModManager
                 _host = GetNode<VBoxContainer>("Host");
 
             foreach (var child in _host.GetChildren())
+            {
+                _host.RemoveChild(child);
                 child.QueueFree();
+            }
 
             if (items == null || items.Count == 0)
             {
@@ -111,7 +114,7 @@ namespace Mods.ModManager
                 card.ActionPressed += OnCardActionPressed;
                 card.EnabledToggled += OnCardEnabledToggled;
                 card.VersionChanged += OnCardVersionChanged;
-                card.CollectionsLinkRequested += () => CollectionsLinkRequested?.Invoke();
+                card.CollectionsLinkRequested += OnCollectionsLinkRequested;
                 card.Init(data);
             }
         }
@@ -120,6 +123,8 @@ namespace Mods.ModManager
         {
             return UiKit.EmptyState(TranslationServer.Translate("mod_manager/no_results"));
         }
+
+        private void OnCollectionsLinkRequested() => CollectionsLinkRequested?.Invoke();
 
         private void OnCardClicked(ModCardData data) => CardClicked?.Invoke(data);
 

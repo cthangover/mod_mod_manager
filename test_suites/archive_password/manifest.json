@@ -1,0 +1,5 @@
+{
+  "name": "7z password dialog smoke test",
+  "depends": ["menu_base>=1"],
+  "sources": ["src/*.cs"]
+}

@@ -192,6 +192,19 @@ theme_override_font_sizes/font_size = 12
 layout_mode = 2
 autowrap_mode = 3
 
+[node name="IntegrationsBox" type="VBoxContainer" parent="Scroll/Content"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Caption" type="Label" parent="Scroll/Content/IntegrationsBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+
+[node name="Text" type="Label" parent="Scroll/Content/IntegrationsBox"]
+layout_mode = 2
+autowrap_mode = 3
+
 [node name="ConflictsBox" type="VBoxContainer" parent="Scroll/Content"]
 visible = false
 layout_mode = 2

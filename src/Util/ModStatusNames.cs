@@ -1,8 +1,8 @@
-using Cthangover.Core.UI.Theming;
-using Godot;
-
 namespace Mods.ModManager
 {
+    using Cthangover.Core.UI.Theming;
+    using Godot;
+
     /// <summary>
     /// Locale keys, badge colors and sort ranks for <see cref="ModItemStatus"/>.
     /// Colors are semantic <see cref="UiTokens"/> entries shared with the rest of
@@ -18,6 +18,8 @@ namespace Mods.ModManager
         /// <summary>Translation key of a status.</summary>
         public static string Key(ModItemStatus status) => status switch
         {
+            ModItemStatus.PasswordRequired => "mod_manager/status_password_required",
+            ModItemStatus.ArchiveError => "mod_manager/status_archive_error",
             ModItemStatus.Installed => "mod_manager/status_installed",
             ModItemStatus.UpdateAvailable => "mod_manager/status_update",
             ModItemStatus.DowngradeAvailable => "mod_manager/status_downgrade",
@@ -29,6 +31,8 @@ namespace Mods.ModManager
         /// <summary>Badge color for a status.</summary>
         public static Color Color(ModItemStatus status) => status switch
         {
+            ModItemStatus.PasswordRequired => UiTokens.Warning,
+            ModItemStatus.ArchiveError => UiTokens.Danger,
             ModItemStatus.Installed => UiTokens.Success,
             ModItemStatus.UpdateAvailable => UiTokens.Warning,
             ModItemStatus.DowngradeAvailable => UiTokens.Info,
@@ -43,6 +47,8 @@ namespace Mods.ModManager
         /// </summary>
         public static int SortRank(ModItemStatus status) => status switch
         {
+            ModItemStatus.PasswordRequired => -2,
+            ModItemStatus.ArchiveError => -1,
             ModItemStatus.UpdateAvailable => 0,
             ModItemStatus.ModifiedLocally => 1,
             ModItemStatus.Installed => 2,

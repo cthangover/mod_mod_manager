@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using Cthangover.Core.Mods;
-using Cthangover.Core.UI;
-using Cthangover.Core.UI.Theming;
-using Cthangover.Core.Utils;
-using Godot;
-
-using Cthangover.Mods.Interface.Base.Lists;
 namespace Mods.ModManager
 {
+    using System;
+    using System.Collections.Generic;
+    using Cthangover.Core.Mods;
+    using Cthangover.Core.UI;
+    using Cthangover.Core.UI.Theming;
+    using Cthangover.Core.Utils;
+    using Godot;
+    using Cthangover.Mods.Interface.Base.Lists;
+
     /// <summary>
     /// Root of the mod manager screen. Opened from the main menu through the
     /// manifest <c>main_menu</c> button as a fullscreen overlay; closing frees the
@@ -21,6 +21,7 @@ namespace Mods.ModManager
     /// </summary>
     public partial class ModManagerScreen : ModWidget
     {
+        [Export] private PackedScene archivePasswordScene;
         private ModManagerModel _model;
         private ModFilterState _filter;
         private ModGridView _grid;
@@ -109,6 +110,10 @@ namespace Mods.ModManager
             _search = GetNode<LineEdit>("Margin/Root/Header/Search");
             _sort = GetNode<OptionButton>("Margin/Root/Header/Sort");
             _refreshButton = GetNode<Button>("Margin/Root/Header/Refresh");
+            var archivePassword = GetNode<Button>("Margin/Root/Header/ArchivePassword");
+            archivePassword.Text = TranslationServer.Translate("mod_manager/archive_password");
+            archivePassword.TooltipText = TranslationServer.Translate("mod_manager/archive_password_tip");
+            archivePassword.Pressed += OnArchivePasswordPressed;
             _resultLabel = GetNode<Label>("Margin/Root/Header/Result");
             _grid = GetNode<ModGridView>("Margin/Root/Body/Content/Grid");
             _detail = GetNode<ModDetailView>("Margin/Root/Body/Content/Detail");
@@ -169,6 +174,7 @@ namespace Mods.ModManager
             _detail.VersionChanged += OnVersionChanged;
             _detail.CollectionsLinkRequested += OnCollectionsLinkRequested;
             ModDownloader.OnProgress += OnInstallProgress;
+            ModDownloader.PasswordRequired += RequestDownloadPassword;
             CatalogService.OnRefreshed += OnCatalogRefreshed;
         }
 
@@ -187,6 +193,7 @@ namespace Mods.ModManager
             _detail.VersionChanged -= OnVersionChanged;
             _detail.CollectionsLinkRequested -= OnCollectionsLinkRequested;
             ModDownloader.OnProgress -= OnInstallProgress;
+            ModDownloader.PasswordRequired -= RequestDownloadPassword;
             CatalogService.OnRefreshed -= OnCatalogRefreshed;
         }
 
@@ -410,6 +417,11 @@ namespace Mods.ModManager
 
         private void ExecuteAction(ModCardData data, ModActionKind kind)
         {
+            if (kind == ModActionKind.UnlockArchive)
+            {
+                OpenArchivePasswordDialog(data.UnavailableArchive?.Path);
+                return;
+            }
             if (kind == ModActionKind.Delete)
             {
                 ConfirmDelete(data);
@@ -509,6 +521,55 @@ namespace Mods.ModManager
         private void OnRefreshPressed()
         {
             RefreshCatalog();
+        }
+
+        private System.Threading.Tasks.Task<string> RequestDownloadPassword(string modId)
+        {
+            var instance = archivePasswordScene?.Instantiate();
+            try
+            {
+                if (instance is not ArchivePasswordDialog dialog)
+                    throw new InvalidOperationException("Archive password prefab is unavailable");
+                AddChild(dialog);
+                dialog.EnsureConstructed();
+                return dialog.RequestDownloadPassword(modId);
+            }
+            finally
+            {
+                if (GodotObject.IsInstanceValid(instance) && instance.GetParent() == null)
+                    instance.Free();
+            }
+        }
+
+        private void OnArchivePasswordPressed() => OpenArchivePasswordDialog(null);
+
+        private void OnArchiveUnlocked(string id)
+        {
+            CloseDetail();
+            _statusMessage = TranslationServer.Translate("mod_manager/archive_unlocked");
+            RefreshAll();
+        }
+
+        private void OpenArchivePasswordDialog(string path)
+        {
+            if (archivePasswordScene == null)
+                return;
+            Node instance = null;
+            try
+            {
+                instance = archivePasswordScene.Instantiate();
+                if (instance is not ArchivePasswordDialog dialog)
+                    throw new InvalidOperationException("Archive password prefab has an unexpected root type");
+                AddChild(dialog);
+                dialog.EnsureConstructed();
+                dialog.SelectArchive(path);
+                dialog.Unlocked += OnArchiveUnlocked;
+            }
+            finally
+            {
+                if (GodotObject.IsInstanceValid(instance) && instance.GetParent() == null)
+                    instance.Free();
+            }
         }
     }
 }

@@ -1,0 +1,5 @@
+{
+  "name": "New Mod Wizard Test",
+  "description": "Frontend GUI test of the Mods & Collections editor: the New mod button writes a mod folder (manifest, locale stub, no repository) and adds it to a game; the Start scene button sets the game's entry scene to a scene of its mods; Save writes both into the game's collection package. The game is a fixture copy of rpg_plus (new_mod_itest_game) that the next suite, new_mod_check, starts and removes together with the mod. Activated by --itest=new_mod with --frontend.",
+  "sources": ["src/*.cs"]
+}

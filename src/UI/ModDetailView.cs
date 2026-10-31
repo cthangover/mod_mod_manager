@@ -38,6 +38,8 @@ namespace Mods.ModManager
         private Label _dependsText;
         private VBoxContainer _usedByBox;
         private Label _usedByText;
+        private VBoxContainer _integrationsBox;
+        private Label _integrationsText;
         private VBoxContainer _conflictsBox;
         private Label _conflictsText;
         private VBoxContainer _documentationBox;
@@ -100,6 +102,8 @@ namespace Mods.ModManager
             _dependsText = GetNode<Label>("Scroll/Content/DependsBox/Text");
             _usedByBox = GetNode<VBoxContainer>("Scroll/Content/UsedByBox");
             _usedByText = GetNode<Label>("Scroll/Content/UsedByBox/Text");
+            _integrationsBox = GetNode<VBoxContainer>("Scroll/Content/IntegrationsBox");
+            _integrationsText = GetNode<Label>("Scroll/Content/IntegrationsBox/Text");
             _conflictsBox = GetNode<VBoxContainer>("Scroll/Content/ConflictsBox");
             _conflictsText = GetNode<Label>("Scroll/Content/ConflictsBox/Text");
             _documentationBox = GetNode<VBoxContainer>("Scroll/Content/DocumentationBox");
@@ -125,6 +129,7 @@ namespace Mods.ModManager
             SetCaption("Scroll/Content/ChangelogBox/Caption", "mod_manager/changelog");
             SetCaption("Scroll/Content/DependsBox/Caption", "mod_manager/depends");
             SetCaption("Scroll/Content/UsedByBox/Caption", "mod_manager/used_by");
+            SetCaption("Scroll/Content/IntegrationsBox/Caption", "mod_manager/integrations");
             SetCaption("Scroll/Content/ConflictsBox/Caption", "mod_manager/conflicts");
             SetCaption("Scroll/Content/Hero/HeroMargin/HeroRow/Info/VersionRow/Caption", "mod_manager/version");
         }
@@ -172,6 +177,7 @@ namespace Mods.ModManager
             _changelogText.Text = NullIfEmpty(_data.SelectedDownload?.Changelog) ?? "—";
             SetOptional(_dependsBox, _dependsText, JoinOrEmpty(ModQueries.GetDependencies(_data)));
             SetOptional(_usedByBox, _usedByText, JoinOrEmpty(ModQueries.GetDependents(_data.Id)));
+            SetOptional(_integrationsBox, _integrationsText, string.Join("\n", ModQueries.GetIntegrations(_data, TranslationServer.Translate("mod_manager/integration_active"))));
             SetOptional(_conflictsBox, _conflictsText, JoinOrEmpty(ModQueries.GetConflicts(_data)));
 
             LoadCover();

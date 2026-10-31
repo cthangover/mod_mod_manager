@@ -18,8 +18,11 @@
     }
   ],
   "test_suites": [
+    { "id": "archive_password", "activate": ["--itest=archive_password"] },
     { "id": "help", "activate": ["--itest=mod_help"] },
     { "id": "documentation", "activate": ["--itest=mod_documentation"] },
-    { "id": "collection_settings", "activate": ["--itest=collection_settings"] }
+    { "id": "collection_settings", "activate": ["--itest=collection_settings"] },
+    { "id": "new_mod", "activate": ["--itest=new_mod"] },
+    { "id": "new_mod_check", "activate": ["--itest=new_mod_check"] }
   ]
 }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using Cthangover.Core.Games;
+using Cthangover.Core.Localization;
 using Cthangover.Core.Mods;
 using Cthangover.Core.Settings;
 using Cthangover.Core.UI;
@@ -68,6 +70,8 @@ namespace Mods.ModManager
         private Label _buildHint;
         private Button _buildManager;
         private Button _buildApply;
+        private Button _newMod;
+        private Button _startScene;
 
         private List<ModCollection> _collections = new();
         private readonly Dictionary<string, ModCollection> _overrides = new(StringComparer.OrdinalIgnoreCase);
@@ -528,6 +532,7 @@ namespace Mods.ModManager
             _bannerPanel.Visible = false;
 
             BindGraphiteControls();
+            BindWizardButtons();
             BuildCrumbs();
             BuildBuildBar();
             if (Embedded)
@@ -1826,6 +1831,128 @@ namespace Mods.ModManager
             if (!mechanic.Mods.Any(m => string.Equals(ParseModId(m), choice.Id, StringComparison.OrdinalIgnoreCase)))
                 mechanic.Mods.Add(choice.Id);
 
+            Rebuild();
+        }
+
+        /// <summary>
+        /// Adds "New mod" after "Add mod" and "Start scene" after "Game parameters" on the tools row. Both are
+        /// built here (not in the scene) and explained by their help cards.
+        /// </summary>
+        private void BindWizardButtons()
+        {
+            var tools = _gameSettings.GetParent();
+            _newMod = new Button
+            {
+                Text = TranslationServer.Translate("mod_manager/collection_new_mod"),
+                TooltipText = TranslationServer.Translate("mod_manager/collection_new_mod_tip"),
+            };
+            _newMod.Pressed += OnNewModPressed;
+            ModHelpPanel.Attach(_newMod, "collection_new_mod");
+            tools.AddChild(_newMod);
+            tools.MoveChild(_newMod, _addMod.GetIndex() + 1);
+
+            _startScene = new Button
+            {
+                Text = TranslationServer.Translate("mod_manager/collection_start_scene"),
+                TooltipText = TranslationServer.Translate("mod_manager/collection_start_scene_tip"),
+            };
+            _startScene.Pressed += OnStartScenePressed;
+            ModHelpPanel.Attach(_startScene, "collection_start_scene");
+            tools.AddChild(_startScene);
+            tools.MoveChild(_startScene, _gameSettings.GetIndex() + 1);
+        }
+
+        /// <summary>The wizard: a form for the title, id, base and game, then files and a draft of the game that joins the mod.</summary>
+        private void OnNewModPressed()
+        {
+            var language = TranslationServer.GetLocale();
+            var games = BuildCollectionIndex().Values
+                .Where(c => c.Kind == ModCollectionKind.Game)
+                .OrderBy(c => c.Id, StringComparer.OrdinalIgnoreCase)
+                .Select(c => (Id: c.Id, Title: c.GetLocalizedName(language)))
+                .ToList();
+            if (games.Count == 0)
+            {
+                ShowNotice(TranslationServer.Translate("mod_manager/newmod_title"), TranslationServer.Translate("mod_manager/newmod_no_game"));
+                return;
+            }
+
+            var dialog = NewModDialog.Build(games, _currentId, OnNewModConfirmed);
+            dialog.Canceled += dialog.QueueFree;
+            dialog.Confirmed += dialog.QueueFree;
+            AddChild(dialog);
+            dialog.PopupCentered(new Vector2I(660, 380));
+        }
+
+        /// <summary>
+        /// Writes the mod's folder, then adds it to the game as its own block ("extra") and saves the drafts: the
+        /// game lists the mod at the next start. A refused id changes nothing.
+        /// </summary>
+        private void OnNewModConfirmed(string name, string id, string description, string dependency, string gameId)
+        {
+            var title = TranslationServer.Translate("mod_manager/newmod_title");
+            var language = LanguageCode.Normalize(TranslationServer.GetLocale()) ?? "en";
+            var outcome = NewModCreator.Create(id, name, description, dependency, language, out _);
+            if (outcome != NewModCreator.Outcome.Created)
+            {
+                ShowNotice(title, TranslationServer.Translate(OutcomeMessageKey(outcome)));
+                return;
+            }
+
+            var draft = Draft(gameId);
+            if (draft == null)
+            {
+                ShowNotice(title, string.Format(TranslationServer.Translate("mod_manager/newmod_created_only"), id));
+                return;
+            }
+
+            draft.Mechanics ??= new List<ModCollectionMechanic>();
+            draft.Mechanics.Add(new ModCollectionMechanic
+            {
+                Id = UniqueMechanicId(draft),
+                Name = name,
+                Role = RoleExtra,
+                Description = description,
+                Mods = new List<string> { id },
+            });
+            _currentId = gameId;
+            SaveDrafts();
+            ShowNotice(title, string.Format(TranslationServer.Translate("mod_manager/newmod_done"), id, draft.GetLocalizedName(TranslationServer.GetLocale())));
+        }
+
+        /// <summary>The message key of a refused outcome; literal keys, so the locale atlas can see each one.</summary>
+        private static string OutcomeMessageKey(NewModCreator.Outcome outcome) => outcome switch
+        {
+            NewModCreator.Outcome.InvalidName => "mod_manager/newmod_name_invalid",
+            NewModCreator.Outcome.InvalidId => "mod_manager/newmod_id_invalid",
+            NewModCreator.Outcome.Exists => "mod_manager/newmod_exists",
+            NewModCreator.Outcome.NoModsFolder => "mod_manager/newmod_no_root",
+            _ => "mod_manager/newmod_failed",
+        };
+
+        /// <summary>The start-scene picker: the scenes of the game's installed mods; Apply sets the draft's entry.</summary>
+        private void OnStartScenePressed()
+        {
+            var collection = EffectiveCollection(_currentId);
+            if (collection == null)
+                return;
+
+            var mods = Resolve().Nodes.Where(n => n.State == ModCollectionNodeState.Installed).Select(n => n.ModId).ToList();
+            var dialog = EntrySceneDialog.Build(CollectionSceneList.Names(mods), collection.Entry?.Scene ?? ActiveGame.DefaultEntryScene, OnStartSceneChosen);
+            dialog.Canceled += dialog.QueueFree;
+            dialog.Confirmed += dialog.QueueFree;
+            AddChild(dialog);
+            dialog.PopupCentered(new Vector2I(520, 240));
+        }
+
+        private void OnStartSceneChosen(string scene)
+        {
+            var draft = Draft(_currentId);
+            if (draft == null)
+                return;
+
+            draft.Entry = string.IsNullOrEmpty(scene) ? null : new ModCollectionEntry { Scene = scene };
+            _statusMessage = string.Format(TranslationServer.Translate("mod_manager/entry_done"), scene ?? ActiveGame.DefaultEntryScene);
             Rebuild();
         }
 

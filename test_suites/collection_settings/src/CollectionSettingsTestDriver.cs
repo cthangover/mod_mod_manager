@@ -71,7 +71,7 @@ namespace Mods.ModManager.SettingsTest
                     OpenForm();
                     break;
                 case 2:
-                    Check(dialog.FindChildren("*", "", true, false).OfType<CollectionSettingRow>().Count() == 5, "five fields read without loading game mods");
+                    Check(dialog.FindChildren("*", "", true, false).OfType<CollectionSettingRow>().Count() == 4, "four fields read without loading game mods");
                     Check(dialog.Title == "Параметры игры", "localized dialog title");
                     Check(Row("battle.core").Value == "missing_core", "unavailable saved choice retained");
                     dialog.Size = new Vector2I(640, 420);

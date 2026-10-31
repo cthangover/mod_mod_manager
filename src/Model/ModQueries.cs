@@ -45,6 +45,27 @@ namespace Mods.ModManager
             return result;
         }
 
+        /// <summary>
+        /// The host's integrations (<see cref="ModManifest.Integrations"/>) for its card, one line each: the
+        /// partner mods, followed by <paramref name="activeMark"/> when the integration is loaded now. An
+        /// integration has no card of its own — the player sees it here, on the mod whose feature it is.
+        /// </summary>
+        public static List<string> GetIntegrations(ModCardData data, string activeMark)
+        {
+            var result = new List<string>();
+            var host = data?.LocalInfo;
+            foreach (var integration in host?.Manifest?.Integrations ?? new List<ModIntegration>())
+            {
+                if (integration?.With == null || integration.With.Count == 0)
+                    continue;
+                var line = string.Join(", ", integration.With);
+                if (ModRegistry.Instance.GetMod(ModTestSuites.ModIdOf(host.Id, integration.Id)) != null)
+                    line += " — " + activeMark;
+                result.Add(line);
+            }
+            return result;
+        }
+
         /// <summary>Declared mutually exclusive mod ids (manifest first, catalog fallback).</summary>
         public static List<string> GetConflicts(ModCardData data)
         {

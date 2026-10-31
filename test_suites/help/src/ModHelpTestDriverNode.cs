@@ -270,7 +270,7 @@ namespace Mods.ModManagerHelpTest
                     break;
 
                 case 19:
-                    Click(FindOccurrence("i:cthangover:dev_tools>=1", "editor_tools"));
+                    Click(FindOccurrence("i:cthangover:dev_tools>=1", "scenario_editor"));
                     SelectVersionPolicy("=");
                     VersionField<LineEdit>("Value").Text = "not a version?";
                     PressEditorButton("SaveRule");
@@ -287,7 +287,7 @@ namespace Mods.ModManagerHelpTest
 
                 case 21:
                     SelectVersionPolicy("=");
-                    VersionField<LineEdit>("Value").Text = ModRegistry.Instance.AllDiscoveredMods["editor_tools"].Version;
+                    VersionField<LineEdit>("Value").Text = ModRegistry.Instance.AllDiscoveredMods["scenario_editor"].Version;
                     PressEditorButton("SaveRule");
                     Check("valid edit retains selection in the per-game block copy", scheme.SelectedGroupKey == "i:cthangover:dev_tools.cthangover");
                     PressEditorButton("Json");
