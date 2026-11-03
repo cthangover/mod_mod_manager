@@ -100,7 +100,7 @@ namespace Mods.ModManager.NewModTest
                     using (var doc = JsonDocument.Parse(manifest))
                     {
                         Check(doc.RootElement.GetProperty("id").GetString() == ModId, "the manifest has the id");
-                        Check(doc.RootElement.GetProperty("depends")[0].GetString() == "rpg>=1", "the manifest depends on rpg");
+                        Check(doc.RootElement.GetProperty("depends")[0].GetString() == "rpg_plus_game>=1", "the manifest depends on the game's own story mod, the wizard's default base (plan 14.G16)");
                     }
                     Check(File.ReadAllText(Path.Combine(modPath, "locale", "en.properties")).Contains($"mod_{ModId}_name = {ModTitle}"), "the English locale stub has the title");
                     Check(!Directory.Exists(Path.Combine(modPath, ".git")) && !File.Exists(Path.Combine(modPath, ".git", "config")), "no repository is made");

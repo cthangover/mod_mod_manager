@@ -74,7 +74,9 @@ Changes to a game apply the next time it starts. Saves of a game remain usable w
 
 ### Make a mod and choose the start
 
-The tools row of a game has **New mod** and **Start scene**. **New mod** asks for a title, an id (it follows the title until you type one), a description, the base mod (RPG world or dialogs and scenes) and the game it joins. It writes a folder of plain files in the mods folder — `manifest.json`, a `locale/` stub with the title, and empty `scenes/`, `scenarios/` and `src/` folders — and adds the mod to the game as its own block. No repository is created. **Start scene** lists the scenes that the game's installed mods define and sets where a new game starts; **Save** keeps it. The mod and the start take effect at the next launch. Use the translations window to fill in the titles in other languages.
+The tools row of a game has **New mod** and **Start scene**. **New mod** asks for a title, an id (it follows the title until you type one), a description, the base mod (the game's own content first, then RPG world or dialogs and scenes) and the game it joins. It writes a folder of plain files in the mods folder — `manifest.json`, a `locale/` stub with the title, and empty `scenes/`, `scenarios/` and `src/` folders — and adds the mod to the game as its own block. No repository is created. **Start scene** lists the scenes that the game's installed mods define and sets where a new game starts; **Save** keeps it. The mod and the start take effect at the next launch. Use the translations window to fill in the titles in other languages.
+
+To make a first game step by step, with the mouse only, read **Your first game in 10 minutes** in the documentation of **RPG Map Editor** (the mod `rpg_editor`): it starts with **New mod** and ends with the character sheet.
 
 ## If something goes wrong
 

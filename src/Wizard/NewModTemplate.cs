@@ -1,7 +1,9 @@
 namespace Mods.ModManager
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using Cthangover.Core.Mods;
     using System.Text.Json;
     using System.Text.Json.Nodes;
     using System.Text.RegularExpressions;
@@ -19,6 +21,24 @@ namespace Mods.ModManager
 
         /// <summary>The base mods a novice can start from, with their dependency strings.</summary>
         public static readonly string[] Bases = { "rpg>=1", "dialog_base>=1" };
+
+        /// <summary>
+        /// The base options for a game, in the order the wizard lists them: the game's own content mods first (a novice
+        /// starts from the game's content at once, e.g. <c>rpg_plus_game</c>, <c>village_pack</c>), then the engine bases.
+        /// Invalid or repeated dependency strings are left out.
+        /// </summary>
+        public static IReadOnlyList<string> OptionsFor(IEnumerable<string> contentDependencies)
+        {
+            var result = new List<string>();
+            foreach (var dependency in contentDependencies ?? Array.Empty<string>())
+            {
+                var parsed = ModDependency.Parse(dependency);
+                if (parsed.IsValid && !result.Contains(dependency))
+                    result.Add(dependency);
+            }
+            result.AddRange(Bases.Where(b => !result.Contains(b)));
+            return result;
+        }
 
         private static readonly Regex IdPattern = new("^[a-z][a-z0-9_]{2,39}$", RegexOptions.CultureInvariant);
 

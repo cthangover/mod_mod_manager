@@ -50,6 +50,16 @@ namespace Mods.ModManager.Tests
             ModAssert.True(text.Contains("\"rpg>=1\""), "the dependency is written as typed, not escaped");
         }
 
+        [ModTest("new_mod/bases_of_a_game_start_with_its_content")]
+        static void BasesOfGame(ModTestContext ctx)
+        {
+            var options = NewModTemplate.OptionsFor(new[] { "rpg_plus_game>=1", "village_pack>=1", "classic_rpg_pack>=1", "village_pack>=1", "bad name" });
+            ModAssert.True(options.SequenceEqual(new[] { "rpg_plus_game>=1", "village_pack>=1", "classic_rpg_pack>=1", "rpg>=1", "dialog_base>=1" }),
+                "the content mods in order, repeats and invalid strings left out, then the engine bases");
+            ModAssert.True(NewModTemplate.OptionsFor(System.Array.Empty<string>()).SequenceEqual(NewModTemplate.Bases),
+                "without a game the options are the engine bases");
+        }
+
         [ModTest("new_mod/locale_stub_has_both_titles")]
         static void LocaleStub(ModTestContext ctx)
         {
