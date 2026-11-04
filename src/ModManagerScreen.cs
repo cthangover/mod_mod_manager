@@ -176,6 +176,7 @@ namespace Mods.ModManager
             ModDownloader.OnProgress += OnInstallProgress;
             ModDownloader.PasswordRequired += RequestDownloadPassword;
             CatalogService.OnRefreshed += OnCatalogRefreshed;
+            CatalogService.OnRefreshFailed += OnCatalogRefreshFailed;
         }
 
         private void UnsubscribeEvents()
@@ -195,13 +196,28 @@ namespace Mods.ModManager
             ModDownloader.OnProgress -= OnInstallProgress;
             ModDownloader.PasswordRequired -= RequestDownloadPassword;
             CatalogService.OnRefreshed -= OnCatalogRefreshed;
+            CatalogService.OnRefreshFailed -= OnCatalogRefreshFailed;
         }
 
         private void RefreshAll()
         {
             _collectionIndex = BuildCollectionIndex();
             _model.Reload();
+            _filterPanel.SetCatalogs(ReadCatalogServers());
             RefreshView();
+        }
+
+        private static List<CatalogServer> ReadCatalogServers()
+        {
+            try { return CatalogServerStore.Default.Load(ModConfig.Instance); }
+            catch (Exception ex)
+            {
+                GameLogger.Log("MOD_MANAGER", $"Cannot read catalog filter names: {ex.Message}", LogLevel.Warning);
+                var servers = new List<CatalogServer>();
+                foreach (var url in ModConfig.Instance.CatalogUrls)
+                    servers.Add(new CatalogServer { Url = url, Name = ModCatalogSource.Host(url) });
+                return servers;
+            }
         }
 
         /// <summary>Rebuilds the merged collection index from the live store.</summary>
@@ -239,7 +255,7 @@ namespace Mods.ModManager
             foreach (var item in items)
                 item.CollectionsCount = CountGamesUsing(item.Id);
             _grid.SetItems(items, _filter.GroupByCategory);
-            _filterPanel.RefreshCounts(_model.CountCategories(_filter), _model.CountStatuses(_filter));
+            _filterPanel.RefreshCounts(_model.CountCategories(_filter), _model.CountStatuses(_filter), _model.CountCatalogs(_filter));
             _resultLabel.Text = string.Format(TranslationServer.Translate("mod_manager/results"), items.Count);
             UpdateBanner();
         }
@@ -314,7 +330,16 @@ namespace Mods.ModManager
             if (!GodotObject.IsInstanceValid(this))
                 return;
 
+            _statusMessage = null;
             RefreshAll();
+        }
+
+        private void OnCatalogRefreshFailed(string message)
+        {
+            if (!GodotObject.IsInstanceValid(this))
+                return;
+            _statusMessage = message;
+            UpdateBanner();
         }
 
         private void OnInstallProgress(InstallProgress progress)
@@ -381,7 +406,7 @@ namespace Mods.ModManager
 
         private void OnVersionChanged(ModCardData data)
         {
-            _filterPanel.RefreshCounts(_model.CountCategories(_filter), _model.CountStatuses(_filter));
+            _filterPanel.RefreshCounts(_model.CountCategories(_filter), _model.CountStatuses(_filter), _model.CountCatalogs(_filter));
         }
 
         private void OnActionPressed(ModCardData data)

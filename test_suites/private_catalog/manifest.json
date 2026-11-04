@@ -1,0 +1,5 @@
+{
+  "name": "Private catalog server integration",
+  "depends": ["menu_base>=1"],
+  "sources": ["src/*.cs"]
+}

@@ -13,6 +13,16 @@ In the main menu choose **Mods & Collections**. The screen has two tabs:
 
 **← Menu** returns to the main menu. The **?** button in the top-right corner, or **F1**, turns on contextual hints: hover over a control to see what it does, click to pin the hint, **Esc** to leave.
 
+## Catalog servers
+
+The **Catalogs (N)** button in the top header shows the number of saved servers. Open it to see the full list and how many sources are enabled. Select a server on the left to edit its name, address, key or **Use this catalog** switch. **Add catalog** opens an empty form; **Delete catalog** removes a source after confirmation. Installed mods remain available.
+
+![Catalog server management: source list and counts on the left; address, masked key field, enable switch and save controls on the right.](assets/catalog-servers.png)
+
+For a local keyserver enter **127.0.0.1:18080**; the manager completes it to `http://127.0.0.1:18080/v1/catalog`. A full catalog URL such as `https://example.com/catalog.json` also works. Paste the issued token into **Access key** for a private catalog, or leave it blank for a public catalog. For the `cthangover-keyserver` local fixture, copy the line from `local-dev/local.token` created by `run_local.bat`.
+
+**Save** applies changes and refreshes catalogs immediately. Settings survive a game restart; no JSON editing is needed. Saved keys are never filled back into the form: leave the field blank to keep the key or choose **Remove saved key** to clear it. Changing the endpoint requires entering the key again. Keys are stored as plain text in your player profile. A disabled server stays listed but is not requested.
+
 ## Browse the mods
 
 ![The Mods tab: filters on the left, a grid of mod cards with cover pictures, the search box with a hint open, sorting and the Refresh catalog button.](assets/mods-list.jpg)
@@ -23,6 +33,10 @@ Each card shows the mod's cover, title, author, the catalog it comes from, how m
 - **By name / By author / By status** sorts the list.
 - **Filters** on the left narrow the list by **Status** (Not installed, Installed, Update available, Older version available, Modified locally, Disabled) and by **Categories** such as Story, Gameplay, Visual, Audio, Library, Engine and Tools. **Reset** clears filters and search.
 - **Refresh catalog** downloads the current list of published mods.
+
+**Catalog** in the left sidebar starts on **All catalogs**. Select a server to show only the mods that it publishes, or **Local only** for mods without a catalog entry. Catalog selection works together with search, status and category filters; the number beside each source respects those other filters. A mod published in several catalogs matches any of its sources. **Reset** returns to all catalogs.
+
+![The left Catalog selector filters the grid to one private source while search and status counts stay in sync.](assets/catalog-filter.png)
 
 *Modified locally* means the installed files differ from the catalog's copy of the same version — for example, a mod you are editing yourself.
 

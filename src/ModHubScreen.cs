@@ -56,6 +56,8 @@ namespace Mods.ModManager
         private ModCollectionsScreen _editor;
         private ModHelpPanel _help;
         private Button _helpButton;
+        private Button _catalogsButton;
+        private CatalogServersDialog _catalogs;
         private bool _editorOpen;
 
         /// <summary>Mods installed this session, shared by the gallery and the editor so both stay honest before a restart.</summary>
@@ -130,6 +132,12 @@ namespace Mods.ModManager
             ModHelpPanel.Attach(_galleryRefresh, "refresh");
             header.AddChild(_galleryRefresh);
 
+            _catalogsButton = UiKit.Button("");
+            _catalogsButton.Name = "CatalogsButton";
+            _catalogsButton.Pressed += OnCatalogsPressed;
+            header.AddChild(_catalogsButton);
+            UpdateCatalogCount();
+
             _helpButton = UiKit.IconButton("?", TranslationServer.Translate("mod_manager/help_open"));
             _helpButton.Name = "HelpButton";
             _helpButton.ToggleMode = true;
@@ -163,6 +171,35 @@ namespace Mods.ModManager
             else
                 _help.Open();
             _helpButton.ButtonPressed = _help.Visible;
+        }
+
+        private void UpdateCatalogCount()
+        {
+            string count;
+            try { count = CatalogServerStore.Default.Load(ModConfig.Instance).Count.ToString(); }
+            catch { count = "?"; }
+            _catalogsButton.Text = string.Format(TranslationServer.Translate("mod_manager/sources_button"), count);
+        }
+
+        private void OnCatalogsPressed()
+        {
+            if (GodotObject.IsInstanceValid(_catalogs))
+                return;
+            var instance = TscnScenes.LoadAndBuild("scenes/components/catalog_servers_dialog.tscn");
+            try
+            {
+                _catalogs = instance as CatalogServersDialog;
+                if (_catalogs == null)
+                    throw new InvalidOperationException("Catalog server dialog scene is unavailable");
+                AddChild(_catalogs);
+                _catalogs.EnsureConstructed();
+                _catalogs.Changed += UpdateCatalogCount;
+            }
+            finally
+            {
+                if (GodotObject.IsInstanceValid(instance) && instance.GetParent() == null)
+                    instance.Free();
+            }
         }
 
         private void BuildBanner()

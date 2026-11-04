@@ -21,23 +21,30 @@ namespace Mods.ModManager
         /// <summary>Selected categories; empty means no category restriction.</summary>
         public HashSet<CategoryType> Categories { get; } = new();
 
+        /// <summary>Null selects all catalogs; empty selects local-only mods; otherwise matches an exact source URL.</summary>
+        public string CatalogUrl { get; set; }
+
         /// <summary>Grid ordering mode.</summary>
         public ModSortMode Sort { get; set; } = ModSortMode.Name;
 
         /// <summary>When true the grid renders category headers between groups.</summary>
         public bool GroupByCategory { get; set; }
 
-        /// <summary>Full match: search + status + category.</summary>
+        /// <summary>Full match: search, status, category and catalog provenance.</summary>
         public bool Matches(ModCardData item)
-            => MatchesSearch(item) && MatchesStatuses(item) && MatchesCategories(item);
+            => MatchesSearch(item) && MatchesStatuses(item) && MatchesCategories(item) && MatchesCatalog(item);
 
         /// <summary>Match ignoring the category set — used to compute category counts.</summary>
         public bool MatchesExceptCategory(ModCardData item)
-            => MatchesSearch(item) && MatchesStatuses(item);
+            => MatchesSearch(item) && MatchesStatuses(item) && MatchesCatalog(item);
 
         /// <summary>Match ignoring the status set — used to compute status counts.</summary>
         public bool MatchesExceptStatus(ModCardData item)
-            => MatchesSearch(item) && MatchesCategories(item);
+            => MatchesSearch(item) && MatchesCategories(item) && MatchesCatalog(item);
+
+        /// <summary>Match ignoring catalog selection, for counts beside every catalog option.</summary>
+        public bool MatchesExceptCatalog(ModCardData item)
+            => MatchesSearch(item) && MatchesStatuses(item) && MatchesCategories(item);
 
         /// <summary>Returns matching items in the configured order.</summary>
         public List<ModCardData> Apply(IEnumerable<ModCardData> source)
@@ -53,12 +60,13 @@ namespace Mods.ModManager
             return result;
         }
 
-        /// <summary>Clears search, statuses and categories; keeps sort and grouping.</summary>
+        /// <summary>Restores all catalogs and clears search, statuses and categories; keeps sort and grouping.</summary>
         public void Reset()
         {
             Search = string.Empty;
             Statuses.Clear();
             Categories.Clear();
+            CatalogUrl = null;
         }
 
         private int Compare(ModCardData a, ModCardData b)
@@ -92,6 +100,20 @@ namespace Mods.ModManager
 
         private bool MatchesStatuses(ModCardData item)
             => Statuses.Count == 0 || Statuses.Contains(item.Status);
+
+        private bool MatchesCatalog(ModCardData item)
+        {
+            if (CatalogUrl == null)
+                return true;
+            var sources = item.SourceUrls;
+            if (CatalogUrl.Length == 0)
+                return sources == null || sources.Count == 0;
+            if (sources != null)
+                foreach (var source in sources)
+                    if (string.Equals(source, CatalogUrl, StringComparison.Ordinal))
+                        return true;
+            return false;
+        }
 
         private bool MatchesCategories(ModCardData item)
             => Categories.Count == 0 || (item.Category & AsFlags()) != 0;

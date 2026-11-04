@@ -665,12 +665,14 @@ namespace Mods.ModManager
 
             ModDownloader.OnProgress += OnInstallProgress;
             CatalogService.OnRefreshed += OnCatalogRefreshed;
+            CatalogService.OnRefreshFailed += OnCatalogRefreshFailed;
         }
 
         private void UnsubscribeEvents()
         {
             ModDownloader.OnProgress -= OnInstallProgress;
             CatalogService.OnRefreshed -= OnCatalogRefreshed;
+            CatalogService.OnRefreshFailed -= OnCatalogRefreshFailed;
             if (_fitQueued)
                 GetTree().ProcessFrame -= OnCanvasFirstFrame;
         }
@@ -2325,7 +2327,18 @@ namespace Mods.ModManager
         private void OnCatalogRefreshed()
         {
             if (GodotObject.IsInstanceValid(this))
+            {
+                _statusMessage = null;
                 ReloadCollections();
+            }
+        }
+
+        private void OnCatalogRefreshFailed(string message)
+        {
+            if (!GodotObject.IsInstanceValid(this))
+                return;
+            _statusMessage = message;
+            UpdateBanner();
         }
 
         private void OnInstallProgress(InstallProgress progress)

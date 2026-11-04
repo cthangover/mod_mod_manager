@@ -18,6 +18,8 @@
     }
   ],
   "test_suites": [
+    { "id": "catalog_servers", "activate": ["--itest=catalog_servers"] },
+    { "id": "private_catalog", "activate": ["--itest=private_catalog"] },
     { "id": "archive_password", "activate": ["--itest=archive_password"] },
     { "id": "help", "activate": ["--itest=mod_help"] },
     { "id": "documentation", "activate": ["--itest=mod_documentation"] },

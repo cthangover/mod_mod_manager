@@ -167,6 +167,27 @@ namespace Mods.ModManager
             return counts;
         }
 
+        /// <summary>Counts each card once per publishing catalog, ignoring only the catalog filter. Empty key means local-only.</summary>
+        public Dictionary<string, int> CountCatalogs(ModFilterState filter)
+        {
+            var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var item in _items)
+            {
+                if (!filter.MatchesExceptCatalog(item))
+                    continue;
+                if (item.SourceUrls == null || item.SourceUrls.Count == 0)
+                {
+                    counts[string.Empty] = counts.GetValueOrDefault(string.Empty) + 1;
+                    continue;
+                }
+                var seen = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var source in item.SourceUrls)
+                    if (!string.IsNullOrWhiteSpace(source) && seen.Add(source))
+                        counts[source] = counts.GetValueOrDefault(source) + 1;
+            }
+            return counts;
+        }
+
         /// <summary>
         /// Indexes catalog entries by mod id. Normally one entry per id, but a
         /// variant conflict (same id/version/title, different content across

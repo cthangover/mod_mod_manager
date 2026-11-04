@@ -91,7 +91,7 @@ namespace Mods.ModManager.NewModTest
                     Type(edits[0], ModTitle);
                     Check(edits[1].Text == ModId || edits[1].Text == "wizard_test_mod", $"the id follows the title ({edits[1].Text})");
                     Type(edits[1], ModId);
-                    form.EmitSignal(AcceptDialog.SignalName.Confirmed);
+                    form.GetOkButton().EmitSignal(BaseButton.SignalName.Pressed);
                     break;
                 case 3:
                     modPath = Path.Combine(ModRoots.ModsPath, ModId);
@@ -106,6 +106,8 @@ namespace Mods.ModManager.NewModTest
                     Check(!Directory.Exists(Path.Combine(modPath, ".git")) && !File.Exists(Path.Combine(modPath, ".git", "config")), "no repository is made");
                     var joined = ModCollectionStore.LoadUser().Single(c => c.Id == FixtureId);
                     Check(joined.Mechanics.Any(m => m.Mods != null && m.Mods.Contains(ModId)), "the game lists the mod as a block");
+                    // Close the creation notice before opening the next modal, as a player does.
+                    FindDialog(Tr("mod_manager/newmod_title")).GetOkButton().EmitSignal(BaseButton.SignalName.Pressed);
                     PressButton(Tr("mod_manager/collection_start_scene"));
                     break;
                 case 4:
@@ -114,12 +116,12 @@ namespace Mods.ModManager.NewModTest
                     var index = Enumerable.Range(0, select.ItemCount).FirstOrDefault(i => select.GetItemText(i) == Scene, -1);
                     Check(index >= 0, "the start-scene picker offers the scene of the game's mods");
                     select.Select(index);
-                    picker.EmitSignal(AcceptDialog.SignalName.Confirmed);
+                    picker.GetOkButton().EmitSignal(BaseButton.SignalName.Pressed);
                     editor.GetNode<Button>("Margin/Root/Header/Save").EmitSignal(BaseButton.SignalName.Pressed);
                     break;
                 case 5:
                     var save = FindDialog(Tr("mod_manager/collection_save"));
-                    save.EmitSignal(AcceptDialog.SignalName.Confirmed);
+                    save.GetOkButton().EmitSignal(BaseButton.SignalName.Pressed);
                     break;
                 case 6:
                     var saved = ModCollectionStore.LoadUser().Single(c => c.Id == FixtureId);

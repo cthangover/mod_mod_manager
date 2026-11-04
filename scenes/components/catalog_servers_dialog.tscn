@@ -1,0 +1,145 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="src/UI/CatalogServersDialog.cs" id="1"]
+
+[node name="CatalogServersDialog" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1")
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+
+[node name="Panel" type="PanelContainer" parent="Center"]
+layout_mode = 2
+custom_minimum_size = Vector2(960, 540)
+
+[node name="Margin" type="MarginContainer" parent="Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="Form" type="VBoxContainer" parent="Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Center/Panel/Margin/Form"]
+layout_mode = 2
+text = "mod_manager/sources_title"
+theme_override_font_sizes/font_size = 24
+
+[node name="Count" type="Label" parent="Center/Panel/Margin/Form"]
+layout_mode = 2
+
+[node name="Body" type="HBoxContainer" parent="Center/Panel/Margin/Form"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="Servers" type="VBoxContainer" parent="Center/Panel/Margin/Form/Body"]
+layout_mode = 2
+custom_minimum_size = Vector2(300, 0)
+theme_override_constants/separation = 10
+
+[node name="List" type="ItemList" parent="Center/Panel/Margin/Form/Body/Servers"]
+layout_mode = 2
+custom_minimum_size = Vector2(300, 260)
+size_flags_vertical = 3
+allow_reselect = true
+
+[node name="New" type="Button" parent="Center/Panel/Margin/Form/Body/Servers"]
+layout_mode = 2
+text = "mod_manager/sources_new"
+
+[node name="Editor" type="VBoxContainer" parent="Center/Panel/Margin/Form/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(560, 0)
+theme_override_constants/separation = 8
+
+[node name="NameLabel" type="Label" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_name"
+
+[node name="Name" type="LineEdit" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+max_length = 80
+
+[node name="UrlLabel" type="Label" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_url"
+
+[node name="Url" type="LineEdit" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+max_length = 2048
+placeholder_text = "https://example.com/catalog.json | 127.0.0.1:18080"
+
+[node name="KeyLabel" type="Label" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_key"
+
+[node name="Key" type="LineEdit" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+max_length = 2048
+secret = true
+
+[node name="ClearKey" type="CheckBox" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_clear_key"
+
+[node name="Enabled" type="CheckBox" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_enabled"
+button_pressed = true
+
+[node name="Hint" type="Label" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+text = "mod_manager/sources_hint"
+autowrap_mode = 2
+size_flags_horizontal = 3
+
+[node name="Actions" type="HBoxContainer" parent="Center/Panel/Margin/Form/Body/Editor"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Save" type="Button" parent="Center/Panel/Margin/Form/Body/Editor/Actions"]
+layout_mode = 2
+text = "mod_manager/sources_save"
+
+[node name="Delete" type="Button" parent="Center/Panel/Margin/Form/Body/Editor/Actions"]
+layout_mode = 2
+text = "mod_manager/sources_delete"
+
+[node name="Status" type="Label" parent="Center/Panel/Margin/Form"]
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Close" type="Button" parent="Center/Panel/Margin/Form"]
+layout_mode = 2
+size_flags_horizontal = 8
+text = "mod_manager/sources_close"
+
+[node name="ConfirmDelete" type="ConfirmationDialog" parent="."]
+

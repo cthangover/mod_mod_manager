@@ -10,8 +10,8 @@ namespace Mods.ModManager
     /// Left filter sidebar. The frame (title, reset button, section captions and
     /// the grouping toggle) lives in
     /// <c>scenes/components/mod_filter_panel.tscn</c> for visual editing; this
-    /// script fills the two list containers with per-status and per-category
-    /// checkboxes and keeps the shared <see cref="ModFilterState"/> in sync.
+    /// script fills the status/category lists and the catalog selector, keeping
+    /// the shared <see cref="ModFilterState"/> in sync.
     /// The panel does not own the state and never rebuilds the grid itself — it
     /// announces every change through <see cref="Changed"/>.
     /// </summary>
@@ -25,6 +25,8 @@ namespace Mods.ModManager
         private CheckButton _groupToggle;
         private VBoxContainer _statusList;
         private VBoxContainer _categoryList;
+        private OptionButton _catalogSelect;
+        private readonly Dictionary<string, string> _catalogNames = new(StringComparer.Ordinal);
         private readonly Dictionary<ModItemStatus, CheckBox> _statusBoxes = new();
         private readonly Dictionary<CategoryType, CheckBox> _categoryBoxes = new();
 
@@ -49,6 +51,8 @@ namespace Mods.ModManager
             _groupToggle = GetNode<CheckButton>("GroupToggle");
             _statusList = GetNode<VBoxContainer>("StatusList");
             _categoryList = GetNode<VBoxContainer>("CategoryList");
+            _catalogSelect = GetNode<OptionButton>("CatalogSelect");
+            GetNode<Label>("CatalogCaption").Text = TranslationServer.Translate("mod_manager/filter_catalog");
 
             _title.Text = TranslationServer.Translate("mod_manager/filters");
             _reset.Text = TranslationServer.Translate("mod_manager/reset_filters");
@@ -65,6 +69,7 @@ namespace Mods.ModManager
 
             _reset.Pressed += OnResetPressed;
             _groupToggle.Toggled += OnGroupToggled;
+            _catalogSelect.ItemSelected += OnCatalogSelected;
 
             foreach (var status in Enum.GetValues<ModItemStatus>())
                 AddStatusCheck(status);
@@ -72,11 +77,49 @@ namespace Mods.ModManager
                 AddCategoryCheck(category);
         }
 
+        /// <summary>Refreshes available source choices after model reload; a removed/disabled selection returns to all catalogs.</summary>
+        public void SetCatalogs(IReadOnlyList<CatalogServer> servers)
+        {
+            _catalogSelect.Clear();
+            _catalogNames.Clear();
+            _catalogSelect.AddItem(TranslationServer.Translate("mod_manager/filter_all_catalogs"));
+            _catalogSelect.AddItem(TranslationServer.Translate("mod_manager/filter_local_only"));
+            _catalogSelect.SetItemMetadata(1, string.Empty);
+            var selected = _state.CatalogUrl == string.Empty ? 1 : 0;
+            foreach (var server in servers)
+            {
+                if (!server.Enabled || string.IsNullOrEmpty(server.Url) || _catalogNames.ContainsKey(server.Url))
+                    continue;
+                var caption = server.Name;
+                if (Uri.TryCreate(server.Url, UriKind.Absolute, out var uri)
+                    && (string.IsNullOrEmpty(caption) || caption == uri.Host))
+                    caption = uri.Authority;
+                _catalogNames.Add(server.Url, caption ?? server.Url);
+                _catalogSelect.AddItem(caption ?? server.Url);
+                var index = _catalogSelect.ItemCount - 1;
+                _catalogSelect.SetItemMetadata(index, server.Url);
+                _catalogSelect.GetPopup().SetItemTooltip(index, server.Url);
+                if (_state.CatalogUrl == server.Url)
+                    selected = index;
+            }
+            if (selected == 0)
+                _state.CatalogUrl = null;
+            _catalogSelect.Select(selected);
+            UpdateCatalogTooltip();
+        }
+
         /// <summary>Refreshes the numbers in the checkbox captions.</summary>
         public void RefreshCounts(
             Dictionary<CategoryType, int> categoryCounts,
-            Dictionary<ModItemStatus, int> statusCounts)
+            Dictionary<ModItemStatus, int> statusCounts,
+            Dictionary<string, int> catalogCounts)
         {
+            for (var index = 1; index < _catalogSelect.ItemCount; index++)
+            {
+                var source = _catalogSelect.GetItemMetadata(index).AsString();
+                var caption = index == 1 ? TranslationServer.Translate("mod_manager/filter_local_only").ToString() : _catalogNames[source];
+                _catalogSelect.SetItemText(index, $"{caption} ({catalogCounts.GetValueOrDefault(source)})");
+            }
             foreach (var pair in _statusBoxes)
             {
                 var count = statusCounts.GetValueOrDefault(pair.Key);
@@ -140,9 +183,24 @@ namespace Mods.ModManager
             Changed?.Invoke();
         }
 
+        private void OnCatalogSelected(long index)
+        {
+            _state.CatalogUrl = index == 0 ? null : _catalogSelect.GetItemMetadata((int)index).AsString();
+            UpdateCatalogTooltip();
+            Changed?.Invoke();
+        }
+
+        private void UpdateCatalogTooltip()
+        {
+            // Only a concrete catalog has extra information beyond the selected caption: its URL.
+            _catalogSelect.TooltipText = string.IsNullOrEmpty(_state.CatalogUrl) ? string.Empty : _state.CatalogUrl;
+        }
+
         private void OnResetPressed()
         {
             _state.Reset();
+            _catalogSelect.Select(0);
+            UpdateCatalogTooltip();
 
             foreach (var box in _statusBoxes.Values)
                 box.SetPressedNoSignal(false);
