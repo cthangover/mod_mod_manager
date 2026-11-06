@@ -35,7 +35,8 @@ namespace Mods.ModManager
         private Label _bannerLabel;
         private Button _refreshButton;
 
-        private string _installingId;
+        private readonly HashSet<string> _installing = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _lastMessage = new(StringComparer.OrdinalIgnoreCase);
         private bool _restartRequired;
         private string _statusMessage;
 
@@ -171,8 +172,8 @@ namespace Mods.ModManager
             _grid.CollectionsLinkRequested += OnCollectionsLinkRequested;
             _detail.ActionPressed += OnActionPressed;
             _detail.DeleteRequested += OnDeleteRequested;
-            _detail.EnabledToggled += OnEnabledToggled;
             _detail.PublishRequested += OnPublishRequested;
+            _detail.EnabledToggled += OnEnabledToggled;
             _detail.VersionChanged += OnVersionChanged;
             _detail.CollectionsLinkRequested += OnCollectionsLinkRequested;
             ModDownloader.OnProgress += OnInstallProgress;
@@ -192,8 +193,8 @@ namespace Mods.ModManager
             _grid.CollectionsLinkRequested -= OnCollectionsLinkRequested;
             _detail.ActionPressed -= OnActionPressed;
             _detail.DeleteRequested -= OnDeleteRequested;
-            _detail.EnabledToggled -= OnEnabledToggled;
             _detail.PublishRequested -= OnPublishRequested;
+            _detail.EnabledToggled -= OnEnabledToggled;
             _detail.VersionChanged -= OnVersionChanged;
             _detail.CollectionsLinkRequested -= OnCollectionsLinkRequested;
             ModDownloader.OnProgress -= OnInstallProgress;
@@ -347,7 +348,14 @@ namespace Mods.ModManager
 
         private void OnInstallProgress(InstallProgress progress)
         {
-            if (string.IsNullOrEmpty(_installingId) || progress == null)
+            if (_installing.Count == 0 || progress == null)
+                return;
+
+            if (!string.IsNullOrEmpty(progress.ModId))
+                _lastMessage[progress.ModId] = progress.Message;
+
+            // Queued and downloading reports are shown by the download panel, not the banner.
+            if (progress.Step == InstallStep.Queued || progress.Step == InstallStep.Downloading)
                 return;
 
             SetBanner(progress.Message);
@@ -421,14 +429,6 @@ namespace Mods.ModManager
             ExecuteAction(data, kind.Value);
         }
 
-        private void OnDeleteRequested(ModCardData data)
-        {
-            ExecuteAction(data, ModActionKind.Delete);
-        }
-
-        private void OnEnabledToggled(ModCardData data)
-        {
-            _model.SetEnabled(data.Id, data.IsDisabled);
         private void OnPublishRequested(ModCardData data)
         {
             if (data.LocalInfo == null)
@@ -451,6 +451,14 @@ namespace Mods.ModManager
 
         private void OnPublished() => RefreshCatalog();
 
+        private void OnDeleteRequested(ModCardData data)
+        {
+            ExecuteAction(data, ModActionKind.Delete);
+        }
+
+        private void OnEnabledToggled(ModCardData data)
+        {
+            _model.SetEnabled(data.Id, data.IsDisabled);
             _restartRequired = true;
             _statusMessage = null;
             RefreshAll();
@@ -483,11 +491,11 @@ namespace Mods.ModManager
 
         private async void StartInstall(ModCardData data, ModActionKind kind)
         {
-            if (!string.IsNullOrEmpty(_installingId))
+            if (!_installing.Add(data.Id))
                 return;
 
             var version = data.SelectedDownload?.Version;
-            _installingId = data.Id;
+            _lastMessage.Remove(data.Id);
             _statusMessage = null;
             SetBanner(string.Format(TranslationServer.Translate("mod_manager/progress_installing"), data.Title));
 
@@ -502,7 +510,10 @@ namespace Mods.ModManager
                 success = false;
             }
 
-            _installingId = null;
+            _installing.Remove(data.Id);
+            var cancelled = _lastMessage.TryGetValue(data.Id, out var lastMessage)
+                && lastMessage == ModDownloader.CancelledMessage;
+            _lastMessage.Remove(data.Id);
 
             if (!GodotObject.IsInstanceValid(this))
                 return;
@@ -515,7 +526,9 @@ namespace Mods.ModManager
             }
             else
             {
-                _statusMessage = TranslationServer.Translate("mod_manager/install_failed");
+                _statusMessage = TranslationServer.Translate(cancelled
+                    ? "mod_manager/download_cancelled"
+                    : "mod_manager/install_failed");
             }
 
             RefreshAll();

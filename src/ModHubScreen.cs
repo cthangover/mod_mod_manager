@@ -49,6 +49,7 @@ namespace Mods.ModManager
         private Button _galleryRefresh;
         private PanelContainer _bannerPanel;
         private Label _bannerLabel;
+        private DownloadQueuePanel _downloads;
         private Control _body;
 
         private ModManagerScreen _mods;
@@ -214,6 +215,9 @@ namespace Mods.ModManager
             _bannerLabel.HorizontalAlignment = HorizontalAlignment.Center;
             _bannerPanel.AddChild(_bannerLabel);
             root.AddChild(_bannerPanel);
+
+            _downloads = new DownloadQueuePanel();
+            root.AddChild(_downloads);
         }
 
         private void BuildBody()
