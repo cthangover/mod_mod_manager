@@ -190,8 +190,8 @@ namespace Mods.ModManager
 
         /// <summary>
         /// Indexes catalog entries by mod id. Normally one entry per id, but a
-        /// variant conflict (same id/version/title, different content across
-        /// catalogs) produces several entries that the UI shows as separate mods.
+        /// hash mismatch between catalogs keeps every listing separate, and the
+        /// UI shows each of them as a separate, unsafe card.
         /// </summary>
         private Dictionary<string, List<CatalogExportEntry>> BuildCatalogVariants()
         {
