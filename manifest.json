@@ -18,6 +18,7 @@
     }
   ],
   "test_suites": [
+    { "id": "publishing", "activate": ["--itest=publishing"] },
     { "id": "catalog_servers", "activate": ["--itest=catalog_servers"] },
     { "id": "private_catalog", "activate": ["--itest=private_catalog"] },
     { "id": "archive_password", "activate": ["--itest=archive_password"] },

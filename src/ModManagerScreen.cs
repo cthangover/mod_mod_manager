@@ -22,6 +22,7 @@ namespace Mods.ModManager
     public partial class ModManagerScreen : ModWidget
     {
         [Export] private PackedScene archivePasswordScene;
+        [Export] private PackedScene publishScene;
         private ModManagerModel _model;
         private ModFilterState _filter;
         private ModGridView _grid;
@@ -171,6 +172,7 @@ namespace Mods.ModManager
             _detail.ActionPressed += OnActionPressed;
             _detail.DeleteRequested += OnDeleteRequested;
             _detail.EnabledToggled += OnEnabledToggled;
+            _detail.PublishRequested += OnPublishRequested;
             _detail.VersionChanged += OnVersionChanged;
             _detail.CollectionsLinkRequested += OnCollectionsLinkRequested;
             ModDownloader.OnProgress += OnInstallProgress;
@@ -191,6 +193,7 @@ namespace Mods.ModManager
             _detail.ActionPressed -= OnActionPressed;
             _detail.DeleteRequested -= OnDeleteRequested;
             _detail.EnabledToggled -= OnEnabledToggled;
+            _detail.PublishRequested -= OnPublishRequested;
             _detail.VersionChanged -= OnVersionChanged;
             _detail.CollectionsLinkRequested -= OnCollectionsLinkRequested;
             ModDownloader.OnProgress -= OnInstallProgress;
@@ -426,6 +429,28 @@ namespace Mods.ModManager
         private void OnEnabledToggled(ModCardData data)
         {
             _model.SetEnabled(data.Id, data.IsDisabled);
+        private void OnPublishRequested(ModCardData data)
+        {
+            if (data.LocalInfo == null)
+                return;
+            var instance = publishScene?.Instantiate();
+            try
+            {
+                if (instance is not ModPublishDialog dialog)
+                    throw new InvalidOperationException("Publishing prefab is unavailable");
+                AddChild(dialog);
+                dialog.Published += OnPublished;
+                dialog.Open(data.LocalInfo);
+            }
+            finally
+            {
+                if (GodotObject.IsInstanceValid(instance) && instance.GetParent() == null)
+                    instance.Free();
+            }
+        }
+
+        private void OnPublished() => RefreshCatalog();
+
             _restartRequired = true;
             _statusMessage = null;
             RefreshAll();

@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="scenes/components/mod_detail_view.tscn" id="4_detail"]
 [ext_resource type="PackedScene" path="scenes/components/archive_password_dialog.tscn" id="5_password"]
 
+[ext_resource type="PackedScene" path="scenes/components/mod_publish_dialog.tscn" id="6_publish"]
+
 [node name="ModManagerScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -16,6 +18,7 @@ grow_vertical = 2
 mouse_filter = 0
 script = ExtResource("1_screen")
 archivePasswordScene = ExtResource("5_password")
+publishScene = ExtResource("6_publish")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1

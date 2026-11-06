@@ -64,6 +64,43 @@ After any of these a banner says **Changes will take effect after restarting the
 
 **Installed is not the same as used.** A game loads the mods named in its collection, plus the menu shell. Installing a mod makes it available; it appears in a game only when that game's collection includes it.
 
+## Publish your mods
+
+Open an installed mod's page and choose **Publish mod**. Select an enabled private
+catalog with a saved key, check the publisher shown by the server, and choose a
+section. Press **Publish mod** in the form and wait for success. The manager then
+refreshes the catalog.
+
+![The publishing form in a local test catalog, shown in Russian: server, verified publisher, permitted section and upload button.](assets/publishing.png)
+
+Folder mods become ZIP packages with hidden files, including `.git`, excluded.
+Existing ZIP/7z packages keep their format and encryption. Archives can be up to
+200 MiB. One author may own at most 100 mods on a server; updates of mods the
+author already owns do not count against this limit. If you edited the manifest while the game was running, publishing uses
+the version and description from the package being sent.
+
+To update, publish the new version with the same mod ID in its existing section,
+using a key for the same author. Earlier versions remain available. Another author
+cannot overwrite your ID; matching manifest author credits grant no rights.
+Ask the catalog owner to preserve your publisher identity when renewing a key.
+Older keys may allow reading only; the catalog owner must issue a publishing key.
+For mods previously added by the administrator, they must also assign ownership.
+
+**Masked access.** The catalog owner may grant a group of sections such as
+`rpg_*`. The form then accepts a concrete permitted name. A wildcard grant does
+not allow overwriting another author's mod.
+
+**Administrator key.** This key enables every section, a new section name and
+**Create section**. The empty section is created both in the catalog and its
+storage folders. Administrators can update any mod while retaining its original
+owner.
+
+![An administrator creating a section: new name, Create section button and server confirmation, shown in Russian.](assets/publishing-admin.png)
+
+The server can also build its catalog automatically from folders uploaded through
+WinSCP. These appear as ordinary catalog entries. Removing a version from those
+folders withdraws it from the current catalog; players keep installed copies.
+
 ## Games and collections
 
 The **Collections** tab first shows the ready-made games. A game is a *collection*: a named set of mods with the place to start.
@@ -97,5 +134,5 @@ To make a first game step by step, with the mouse only, read **Your first game i
 1. **A mod does not appear in a game.** Check that it is enabled and that the game's collection includes it (open **Edit scheme**).
 2. **"Install failed".** Check the internet connection and try **Refresh catalog** again.
 3. **A game card says Missing or Problems.** Open its scheme and the **Check** tab: it lists missing mods, version gaps and conflicts.
-4. **Catalog conflict.** The same mod and version is published with different content by two catalogs; prefer the catalog you trust.
+4. **Red "Unsafe" card.** Several catalogs publish a mod with the same ID, but their content hashes differ. It is unknown which copy is genuine, so the cards of this mod from every catalog are marked red. Do not install it and tell the catalog administrators.
 5. **No documentation section.** The mod has no `docs/` guide yet; its manifest description is shown instead.

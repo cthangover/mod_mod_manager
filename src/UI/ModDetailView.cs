@@ -55,6 +55,9 @@ namespace Mods.ModManager
         /// <summary>Raised when the standalone delete button is pressed.</summary>
         public event Action<ModCardData> DeleteRequested;
 
+        /// <summary>Requests publishing the installed mod to a private catalog.</summary>
+        public event Action<ModCardData> PublishRequested;
+
         /// <summary>Raised when the enable/disable button is pressed.</summary>
         public event Action<ModCardData> EnabledToggled;
 
@@ -148,10 +151,10 @@ namespace Mods.ModManager
                 return;
 
             _title.Text = _data.Title ?? _data.Id;
+            GetNode<Control>("Scroll/Content/Hero/HeroMargin/HeroRow/Cover/DevelopmentFrame").Visible = _data.IsInDevelopment;
             _author.Text = _data.Author ?? string.Empty;
 
             if (_data.IsConflict)
-            GetNode<Control>("Scroll/Content/Hero/HeroMargin/HeroRow/Cover/DevelopmentFrame").Visible = _data.IsInDevelopment;
             {
                 _meta.Text = TranslationServer.Translate("mod_manager/status_conflict");
                 _meta.AddThemeColorOverride("font_color", UiTokens.Danger);
@@ -253,6 +256,8 @@ namespace Mods.ModManager
             _versions.TooltipText = TranslationServer.Translate("mod_manager/hint_mod_version_body");
         }
 
+        private void OnPublishPressed() => PublishRequested?.Invoke(_data);
+
         private void BuildActions()
         {
             foreach (var child in _actionsRow.GetChildren())
@@ -298,6 +303,13 @@ namespace Mods.ModManager
                 ModHelpPanel.Attach(toggle, "mod_enabled");
                 toggle.Pressed += OnTogglePressed;
                 _actionsRow.AddChild(toggle);
+            }
+
+            if (_data.LocalInfo?.FileProvider?.RootPath != null)
+            {
+                var publish = new Button { Name = "Publish", Text = TranslationServer.Translate("mod_manager/publish_button") };
+                publish.Pressed += OnPublishPressed;
+                _actionsRow.AddChild(publish);
             }
 
             if (_data.IsProtected)
