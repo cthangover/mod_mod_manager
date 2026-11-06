@@ -151,6 +151,7 @@ namespace Mods.ModManager
             _author.Text = _data.Author ?? string.Empty;
 
             if (_data.IsConflict)
+            GetNode<Control>("Scroll/Content/Hero/HeroMargin/HeroRow/Cover/DevelopmentFrame").Visible = _data.IsInDevelopment;
             {
                 _meta.Text = TranslationServer.Translate("mod_manager/status_conflict");
                 _meta.AddThemeColorOverride("font_color", UiTokens.Danger);

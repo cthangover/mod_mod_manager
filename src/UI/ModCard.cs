@@ -101,6 +101,7 @@ namespace Mods.ModManager
                 return;
 
             _title.Text = _data.Title ?? _data.Id;
+            GetNode<Control>("VBox/Cover/DevelopmentFrame").Visible = _data.IsInDevelopment;
             _author.Text = _data.Author ?? string.Empty;
             UpdateSourceLabel();
             UpdateCollectionsLink();

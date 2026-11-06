@@ -70,8 +70,9 @@ namespace Mods.ModManager
         public bool HasRemote => Catalog != null;
 
         /// <summary>
-        /// True when several catalogs publish this id with the same version and
-        /// title but different content — the tile and detail page warn about it.
+        /// True when catalog listings of this id disagree on a content hash. Every
+        /// listing of the id gets it, so the tile and the detail page show all of
+        /// them as unsafe.
         /// </summary>
         public bool IsConflict => Catalog?.VariantConflict == true;
 
@@ -102,6 +103,9 @@ namespace Mods.ModManager
         public string DisplayVersion => !string.IsNullOrEmpty(LocalVersion)
             ? LocalVersion
             : SelectedDownload?.Version ?? Catalog?.Version;
+
+        /// <summary>Local covers describe the installed package; catalog-only covers follow the selected download.</summary>
+        public bool IsInDevelopment => VersionHelper.IsInDevelopment(DisplayVersion);
 
         /// <summary>
         /// Derives <see cref="Status"/> from the local and selected remote versions.

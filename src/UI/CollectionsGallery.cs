@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Cthangover.Core.Games;
 using Cthangover.Core.Mods;
 using Cthangover.Core.UI.Theming;
 using Cthangover.Core.Utils;
@@ -249,7 +250,7 @@ namespace Mods.ModManager
             card.AddChild(column);
 
             var top = UiKit.Row(UiTokens.Space3);
-            top.AddChild(BuildCover(summary.Name ?? summary.Collection.Id));
+            top.AddChild(BuildCover(summary));
             var headColumn = UiKit.Column(2);
             headColumn.SizeFlagsHorizontal = SizeFlags.ExpandFill;
             var title = UiKit.Label(summary.Name ?? summary.Collection.Id, UiTokens.FontBodyLarge, UiTokens.InkBright);
@@ -309,14 +310,28 @@ namespace Mods.ModManager
             return card;
         }
 
-        /// <summary>Cover box with the first grapheme of the game name (mockup's emoji slot).</summary>
-        private static Control BuildCover(string title)
+        /// <summary>Game cover with a development overlay; missing covers keep the first grapheme placeholder.</summary>
+        private static Control BuildCover(ModCollectionGameSummary summary)
         {
-            var panel = new PanelContainer { CustomMinimumSize = new Vector2(64, 64) };
+            var panel = new PanelContainer { CustomMinimumSize = new Vector2(144, 81), MouseFilter = MouseFilterEnum.Ignore };
             panel.AddThemeStyleboxOverride("panel", UiKit.Frame(UiTokens.RadiusMd, UiTokens.Surface1, UiTokens.Line));
 
+            var cover = GameCatalog.LoadCover(summary.Collection);
+            if (cover != null)
+            {
+                panel.AddChild(new TextureRect
+                {
+                    Texture = cover,
+                    ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+                    StretchMode = TextureRect.StretchModeEnum.KeepAspectCovered,
+                    MouseFilter = MouseFilterEnum.Ignore,
+                });
+                panel.AddChild(UiKit.DevelopmentFrame(summary.Collection.Version));
+                return panel;
+            }
+
             var letter = "·";
-            var text = title?.Trim();
+            var text = (summary.Name ?? summary.Collection.Id)?.Trim();
             if (!string.IsNullOrEmpty(text))
             {
                 // First grapheme cluster so surrogate-pair emoji covers survive.
@@ -329,6 +344,7 @@ namespace Mods.ModManager
             label.HorizontalAlignment = HorizontalAlignment.Center;
             label.VerticalAlignment = VerticalAlignment.Center;
             panel.AddChild(label);
+            panel.AddChild(UiKit.DevelopmentFrame(summary.Collection.Version));
             return panel;
         }
 

@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="src/UI/ModCard.cs" id="1_card"]
 
+[ext_resource type="PackedScene" path="scenes/ui/development_frame.tscn" id="development_frame"]
+
 [node name="ModCard" type="PanelContainer"]
 custom_minimum_size = Vector2(236, 0)
 size_flags_horizontal = 0
@@ -38,6 +40,9 @@ grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
+
+[node name="DevelopmentFrame" parent="VBox/Cover" instance=ExtResource("development_frame")]
+layout_mode = 1
 
 [node name="Body" type="MarginContainer" parent="VBox"]
 layout_mode = 2

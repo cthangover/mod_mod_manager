@@ -37,8 +37,10 @@ namespace Mods.ModManagerHelpTest
         private int step;
         private double elapsed;
         private double stepAt;
+        private double catalogWaitFrom;
         private bool done;
         private ModHubScreen hub;
+        private bool selectedDevelopmentFrame;
         private ModCollectionsScreen collectionEditor;
         private CollectionSchemeCanvas scheme;
         private Vector2 firstOccurrencePosition;
@@ -99,6 +101,7 @@ namespace Mods.ModManagerHelpTest
                     PressTab("mod_manager/hub_tab_mods");
                     CheckLevel("mods");
                     PressHelp();
+                    catalogWaitFrom = elapsed;
                     ModHelpPanel help = Help();
                     Check("the header enables help mode", help != null && help.Visible);
                     Check("help has no dim backdrop", help != null && help.GetNodeOrNull("Dim") == null);
@@ -110,17 +113,29 @@ namespace Mods.ModManagerHelpTest
 
                 case 2:
                 {
+                    // The grid needs the catalog's versions; the fetch over the
+                    // internet may still run (up to 30 s before the check gives up).
+                    if (CatalogService.IsFetching && elapsed - catalogWaitFrom < 30)
+                        return;
                     ModHelpPanel help = Help();
                     Check("a shown hint is pinned", help != null && help.IsPinned);
-                    var card = hub.FindChildren("*", "", true, false).OfType<ModCard>().FirstOrDefault(c => c.IsVisibleInTree());
+                    ShotRendered("development_mod_grid");
+                    var card = hub.FindChildren("*", "", true, false).OfType<ModCard>().FirstOrDefault(c =>
+                        c.IsVisibleInTree() && c.GetNode<Control>("VBox/Cover/DevelopmentFrame").Visible
+                        && !c.GetNode<OptionButton>("VBox/Body/Box/MetaRow/VersionHost/Versions").Disabled);
+                    selectedDevelopmentFrame = card?.GetNode<Control>("VBox/Cover/DevelopmentFrame").Visible == true;
                     Check("the grid shows mod cards", card != null);
+                    Check("development mod card has a non-interactive frame", card?.GetNode<TextureRect>("VBox/Cover/DevelopmentFrame") is { Texture: not null, MouseFilter: Control.MouseFilterEnum.Ignore });
                     card?.EmitSignal(Control.SignalName.GuiInput, new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true });
                     break;
                 }
 
                 case 3:
                 {
+                    ShotRendered("development_mod_page");
                     Check("the hub stays interactive while help is open", hub.FindChildren("*", "", true, false).OfType<ModDetailView>().Any(d => d.IsVisibleInTree()));
+                    var detail = hub.FindChildren("*", "", true, false).OfType<ModDetailView>().FirstOrDefault(d => d.IsVisibleInTree());
+                    Check("the mod page keeps the selected card development status", detail != null && detail.GetNode<Control>("Scroll/Content/Hero/HeroMargin/HeroRow/Cover/DevelopmentFrame").Visible == selectedDevelopmentFrame);
                     CheckLevel("mod_page");
                     CheckHelp("mod_version", Annotated("mod_version"));
                     PressTab("mod_manager/hub_tab_collections");
@@ -129,7 +144,15 @@ namespace Mods.ModManagerHelpTest
 
                 case 4:
                 {
+                    ShotRendered("development_gallery");
                     Check("collections open without closing help", Gallery() != null && Gallery().IsVisibleInTree() && Help().Visible);
+                    var covers = Gallery()?.FindChildren("DevelopmentFrame", "", true, false).OfType<TextureRect>().ToList();
+                    Check("game gallery shows framed covers", covers?.Count >= 4 && covers.All(c => c.Visible && c.Texture != null && c.MouseFilter == Control.MouseFilterEnum.Ignore));
+                    if (OS.GetCmdlineUserArgs().Contains("--development-covers-only"))
+                    {
+                        Finish();
+                        return;
+                    }
                     CheckLevel("gallery");
                     EscapeHelp();
                     hub.OpenCollectionEditor(GameId);
@@ -639,6 +662,17 @@ namespace Mods.ModManagerHelpTest
 
         private static string TextOf(BaseButton button)
             => button is Button clickable ? clickable.Text : string.Empty;
+
+        private void ShotRendered(string name)
+        {
+            var argument = OS.GetCmdlineUserArgs().FirstOrDefault(a => a.StartsWith("--shots="));
+            if (argument == null || DisplayServer.GetName() == "headless")
+                return;
+            // These calls precede same-tick navigation: capture the frame already rendered during the previous tick.
+            var directory = ProjectSettings.GlobalizePath(argument.Substring("--shots=".Length));
+            Directory.CreateDirectory(directory);
+            ViewportCapture.SavePng(GetViewport(), Path.Combine(directory, name + ".png"));
+        }
 
         /// <summary>With <c>--shots=&lt;dir&gt;</c> saves the settled window as <paramref name="name"/>.png.</summary>
         private async void Shot(string name)

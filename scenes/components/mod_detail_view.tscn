@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="src/UI/ModDetailView.cs" id="1_detail"]
 [ext_resource type="Script" path="src/UI/ModMarkdownView.cs" id="2_markdown"]
 
+[ext_resource type="PackedScene" path="scenes/ui/development_frame.tscn" id="development_frame"]
+
 [node name="ModDetailView" type="VBoxContainer"]
 theme_override_constants/separation = 8
 script = ExtResource("1_detail")
@@ -58,6 +60,9 @@ grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
+
+[node name="DevelopmentFrame" parent="Scroll/Content/Hero/HeroMargin/HeroRow/Cover" instance=ExtResource("development_frame")]
+layout_mode = 1
 
 [node name="Info" type="VBoxContainer" parent="Scroll/Content/Hero/HeroMargin/HeroRow"]
 layout_mode = 2
