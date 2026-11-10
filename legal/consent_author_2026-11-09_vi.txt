@@ -1,0 +1,123 @@
+GIẤY ĐỒNG Ý
+
+về việc xử lý dữ liệu cá nhân của tác giả mod khi công khai mod trong danh mục riêng tư cthangover
+
+Phiên bản ngày 9 tháng 11 năm 2026
+
+1. Giấy đồng ý được cấp cho ai
+
+1.1. Giấy đồng ý này được cấp cho Ilya Viktorovich Isaev, mã số thuế (ИНН) 673206026792, người áp dụng chế độ thuế đặc biệt «Thuế thu nhập nghề nghiệp», thành phố Smolensk, tỉnh Smolensk (sau đây gọi là: Chủ thể xử lý dữ liệu cá nhân).
+
+1.2. Địa chỉ e-mail của Chủ thể xử lý dữ liệu cá nhân: vpcoder@ya.ru. Điện thoại: +7 920 332-33-47.
+
+1.3. Trang web của Chủ thể xử lý dữ liệu cá nhân: https://cthangover.ru (sau đây gọi là: Trang web). Danh mục mod riêng tư cthangover mà quyền truy cập được cấp bằng khóa cá nhân (sau đây gọi là: Danh mục). Phần bổ sung cho engine trò chơi cthangover được công khai trong Danh mục (sau đây gọi là: Mod).
+
+2. Trình tự cấp Giấy đồng ý và đối tượng của nó
+
+2.1. Giấy đồng ý này được cấp bởi người đăng ký gói có ý định công khai các Mod của riêng mình trong Danh mục, thông qua hành vi chủ động: đánh dấu vào thành phần của biểu mẫu mà thành phần đó không được đánh dấu sẵn, hoặc nhấn nút xác nhận khi công khai Mod lần đầu.
+
+2.2. Giấy đồng ý được lập riêng, tách khỏi các thông tin và tài liệu khác mà chủ thể dữ liệu cá nhân xác nhận, trong đó có tách khỏi Chào hàng công khai và tách khỏi Giấy đồng ý xử lý dữ liệu cá nhân, theo khoản 1 Điều 9 của Luật Liên bang số 152-FZ ngày 27.07.2006 «Về dữ liệu cá nhân».
+
+2.3. Việc cấp Giấy đồng ý này là tự nguyện. Việc từ chối cấp không cản trở việc ký kết hợp đồng theo điều khoản của Chào hàng công khai, việc truy cập các khu vực của Danh mục, việc cài đặt Mod và việc nhận hỗ trợ. Nếu không có Giấy đồng ý này thì chỉ không thực hiện được việc công khai các Mod của người đăng ký gói trong Danh mục, vì việc công khai như vậy gắn với việc hiển thị tên tác giả.
+
+2.4. Chủ thể xử lý dữ liệu cá nhân lưu các thông tin về tình tiết, ngày, giờ và phạm vi của Giấy đồng ý đã cấp, cũng như về phiên bản văn bản của nó, trong suốt thời hạn hiệu lực của Giấy đồng ý và 1 (một) năm sau khi nó chấm dứt.
+
+3. Mục đích xử lý dữ liệu cá nhân
+
+3.1. Hiển thị tên tác giả Mod cho những người dùng Danh mục có quyền truy cập vào khu vực mà Mod được đặt.
+
+3.2. Gán cố định định danh của Mod đã công khai cho tác giả của nó, loại trừ việc bên khác sử dụng định danh đó.
+
+3.3. Quản lý thông tin về các Mod do chủ thể dữ liệu cá nhân công khai và về các phiên bản của chúng, trong đó có việc khôi phục trạng thái công khai và xem xét các đơn yêu cầu về nội dung Mod.
+
+3.4. Xem xét các đơn yêu cầu và ý kiến phản đối của chủ thể dữ liệu cá nhân liên quan đến việc công khai các Mod của mình.
+
+4. Danh mục dữ liệu cá nhân mà việc xử lý được cấp Giấy đồng ý
+
+4.1. Tên gọi mà chủ thể dữ liệu cá nhân đã chỉ định làm tên tác giả Mod. Tên gọi đó có thể là tên hư cấu hoặc họ tên thật của chủ thể dữ liệu cá nhân nếu người đó tự chỉ định.
+
+4.2. Thông tin về các Mod đã công khai: định danh, tên gọi, mô tả, phiên bản và ngày công khai của chúng.
+
+4.3. Địa chỉ e-mail dùng để nhận các thông báo liên quan đến việc công khai Mod.
+
+4.4. Các nhóm dữ liệu cá nhân đặc biệt và dữ liệu cá nhân sinh trắc học không được xử lý.
+
+5. Cách hiển thị tên tác giả và phạm vi người được truy cập
+
+5.1. Tên tác giả được xác định theo bản ghi trong khóa truy cập cá nhân của chủ thể dữ liệu cá nhân và không lấy từ các tệp của Mod.
+
+5.2. Tên tác giả được hiển thị cho những người dùng Danh mục có quyền truy cập vào khu vực mà Mod được đặt. Quyền truy cập vào khu vực được cấp bằng các khóa cá nhân do Chủ thể xử lý dữ liệu cá nhân cấp, tức là cho một nhóm người xác định.
+
+5.3. Chủ thể xử lý dữ liệu cá nhân không phổ biến tên tác giả cho nhóm người không giới hạn. Trong danh mục mod công khai và trên các trang của Trang web, tên tác giả của Mod đã công khai trong Danh mục không được đặt.
+
+5.4. Giấy đồng ý này không phải là Giấy đồng ý xử lý các dữ liệu cá nhân mà chủ thể dữ liệu cá nhân cho phép phổ biến theo Điều 10.1 của Luật Liên bang «Về dữ liệu cá nhân».
+
+5.5. Nếu Chủ thể xử lý dữ liệu cá nhân quyết định đặt thông tin về tác giả Mod trong môi trường công khai, việc đặt đó sẽ chỉ được thực hiện trên cơ sở Giấy đồng ý riêng được lập theo Điều 10.1 của Luật Liên bang «Về dữ liệu cá nhân».
+
+6. Thông tin về hậu quả của việc công khai đã được giải thích cho chủ thể dữ liệu cá nhân
+
+6.1. Tên tác giả được chuyển cho những người dùng Danh mục cùng với thông tin về Mod và được lưu trong các bản sao Mod mà những người dùng đó nhận.
+
+6.2. Các bản sao Mod nằm trên thiết bị của những người dùng đã nhận chúng. Chủ thể xử lý dữ liệu cá nhân không có quyền truy cập vào chúng và không thể sửa đổi hay xóa chúng. Việc ngừng công khai Mod, rút bỏ Giấy đồng ý này và hủy bỏ tên tác giả ở phía Chủ thể xử lý dữ liệu cá nhân không làm các bản sao đã nhận trước đó bị sửa đổi hay xóa.
+
+6.3. Chủ thể xử lý dữ liệu cá nhân khuyến nghị chủ thể dữ liệu cá nhân chỉ định làm tên tác giả một tên gọi không chứa họ tên thật của mình.
+
+6.4. Theo Điều 1265 của Bộ luật Dân sự Liên bang Nga, chủ thể dữ liệu cá nhân có quyền sử dụng Mod dưới tên hư cấu (biệt danh) hoặc không ghi tên. Việc chọn tên tác giả do chủ thể dữ liệu cá nhân tự thực hiện.
+
+6.5. Việc chủ thể dữ liệu cá nhân chỉ định họ tên thật của mình làm tên tác giả đồng nghĩa với việc các thông tin đó được những người dùng Danh mục có quyền truy cập vào khu vực tương ứng biết đến và được lưu trong các bản sao Mod mà họ nhận.
+
+7. Danh mục các hành vi với dữ liệu cá nhân và cách thức xử lý
+
+7.1. Giấy đồng ý được cấp để thực hiện các hành vi sau: thu thập, ghi, hệ thống hóa, tích lũy, lưu trữ, hiệu chỉnh, trích xuất, sử dụng, cung cấp, truy cập, khử định danh, tạm khóa, xóa và hủy bỏ dữ liệu cá nhân.
+
+7.2. Việc xử lý được thực hiện cả bằng phương tiện tự động hóa lẫn không dùng phương tiện đó.
+
+7.3. Việc ghi, hệ thống hóa, tích lũy, lưu trữ, hiệu chỉnh và trích xuất dữ liệu cá nhân được thực hiện bằng các cơ sở dữ liệu đặt trên lãnh thổ Liên bang Nga. Không thực hiện chuyển giao dữ liệu cá nhân xuyên biên giới.
+
+7.4. Dữ liệu cá nhân không được chuyển cho bên thứ ba để bên đó tự sử dụng cho các mục đích riêng của mình và không được sử dụng để lập hồ sơ (profiling).
+
+8. Thời hạn hiệu lực của Giấy đồng ý và thời hạn xử lý
+
+8.1. Giấy đồng ý có hiệu lực trong suốt thời gian các Mod của chủ thể dữ liệu cá nhân được đặt trong Danh mục và 30 (ba mươi) ngày sau khi Mod cuối cùng trong số đó bị ngừng công khai, nếu Giấy đồng ý không bị rút bỏ sớm hơn.
+
+8.2. Tên tác giả được lưu trong suốt thời gian Mod được đặt trong Danh mục và 30 (ba mươi) ngày sau khi Mod bị ngừng công khai, sau đó bị hủy bỏ.
+
+8.3. Thông tin về các định danh Mod được gán cố định cho tác giả được lưu trong suốt thời gian Mod được đặt trong Danh mục; còn về phần gán cố định định danh: cho đến khi chủ thể dữ liệu cá nhân yêu cầu loại bỏ các thông tin đó.
+
+9. Trình tự rút bỏ Giấy đồng ý
+
+9.1. Chủ thể dữ liệu cá nhân có quyền rút bỏ Giấy đồng ý này vào bất kỳ lúc nào bằng cách gửi đơn yêu cầu đến địa chỉ e-mail vpcoder@ya.ru. Việc rút bỏ không đòi hỏi phải giải thích lý do.
+
+9.2. Việc rút bỏ Giấy đồng ý đồng nghĩa với việc chấm dứt hiển thị tên tác giả và làm các Mod mà chủ thể dữ liệu cá nhân đã công khai bị ngừng công khai, vì việc công khai Mod trong Danh mục mà không hiển thị tên tác giả về mặt kỹ thuật không được thực hiện. Việc ngừng công khai các Mod được thực hiện trong thời hạn không quá 3 (ba) ngày làm việc kể từ ngày nhận được yêu cầu rút bỏ.
+
+9.3. Chủ thể xử lý dữ liệu cá nhân hủy bỏ tên tác giả trong thời hạn không quá 30 (ba mươi) ngày kể từ ngày nhận được yêu cầu rút bỏ, nếu việc lưu tên không cần thiết để thực hiện các nghĩa vụ mà pháp luật của Liên bang Nga đặt ra cho Chủ thể xử lý dữ liệu cá nhân.
+
+9.4. Việc rút bỏ Giấy đồng ý không làm rút bỏ khóa truy cập, không chấm dứt quyền truy cập của chủ thể dữ liệu cá nhân vào các khu vực của Danh mục và không ảnh hưởng đến quyền hoàn tiền của người đó.
+
+9.5. Hậu quả của việc rút bỏ Giấy đồng ý đối với các bản sao Mod mà người dùng Danh mục đã nhận trước đó được xác định theo khoản 6.2 của Giấy đồng ý này.
+
+9.6. Chủ thể dữ liệu cá nhân có quyền thay vì rút bỏ Giấy đồng ý thì thay đổi tên tác giả bằng cách liên hệ với Chủ thể xử lý dữ liệu cá nhân. Tên đã thay đổi được áp dụng cho các Mod kể từ thời điểm cấp lại khóa truy cập và không làm các bản sao Mod mà người dùng đã nhận trước đó thay đổi.
+
+10. Quyền của chủ thể dữ liệu cá nhân
+
+10.1. Chủ thể dữ liệu cá nhân có quyền nhận thông tin liên quan đến việc xử lý dữ liệu cá nhân của mình trong phạm vi quy định tại khoản 7 Điều 14 của Luật Liên bang «Về dữ liệu cá nhân».
+
+10.2. Chủ thể dữ liệu cá nhân có quyền yêu cầu hiệu chỉnh dữ liệu cá nhân của mình, tạm khóa hoặc hủy bỏ chúng trong các trường hợp do pháp luật quy định.
+
+10.3. Chủ thể dữ liệu cá nhân có quyền yêu cầu ngừng công khai các Mod của mình theo trình tự do Chào hàng công khai quy định.
+
+10.4. Chủ thể dữ liệu cá nhân có quyền khiếu nại hành vi hoặc không hành động của Chủ thể xử lý dữ liệu cá nhân lên cơ quan có thẩm quyền về bảo vệ quyền của chủ thể dữ liệu cá nhân hoặc theo trình tự tư pháp.
+
+10.5. Trình tự thực hiện các quyền và thời hạn xem xét các yêu cầu được quy định trong Chính sách về việc xử lý dữ liệu cá nhân.
+
+11. Các xác nhận của chủ thể dữ liệu cá nhân
+
+11.1. Khi cấp Giấy đồng ý này, chủ thể dữ liệu cá nhân xác nhận rằng mình hành động một cách tự do, theo ý chí và vì lợi ích của mình.
+
+11.2. Chủ thể dữ liệu cá nhân xác nhận rằng mình đã đọc Chính sách về việc xử lý dữ liệu cá nhân và Chào hàng công khai được đặt trên Trang web.
+
+11.3. Chủ thể dữ liệu cá nhân xác nhận rằng các thông tin về hậu quả của việc công khai nêu tại phần 6 của Giấy đồng ý này đã được giải thích cho mình và mình hiểu rõ, trong đó có việc không thể sửa đổi và xóa các bản sao Mod mà người dùng Danh mục đã nhận.
+
+11.4. Chủ thể dữ liệu cá nhân xác nhận rằng mình có đủ năng lực hành vi dân sự cần thiết để cấp Giấy đồng ý này; nếu tuổi từ mười bốn đến mười tám: rằng Giấy đồng ý được cấp với sự đồng ý của người đại diện theo pháp luật.
+
+11.5. Phiên bản hiện hành của Giấy đồng ý này được đặt trên Trang web. Ngày của phiên bản được ghi ở đầu tài liệu.

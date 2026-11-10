@@ -85,6 +85,34 @@ placeholder_text = "mod_manager/publish_section_name"
 layout_mode = 2
 text = "mod_manager/publish_create_section"
 
+[node name="Consent" type="VBoxContainer" parent="Center/Panel/Margin/Form"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Language" type="Label" parent="Center/Panel/Margin/Form/Consent"]
+layout_mode = 2
+autowrap_mode = 2
+text = "mod_manager/publish_consent_language"
+
+[node name="Text" type="RichTextLabel" parent="Center/Panel/Margin/Form/Consent"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+bbcode_enabled = false
+scroll_active = true
+selection_enabled = true
+auto_translate_mode = 2
+
+[node name="Website" type="Button" parent="Center/Panel/Margin/Form/Consent"]
+layout_mode = 2
+text = "mod_manager/publish_consent_website"
+
+[node name="Accept" type="CheckBox" parent="Center/Panel/Margin/Form/Consent"]
+layout_mode = 2
+button_pressed = false
+text = "mod_manager/publish_consent_accept"
+autowrap_mode = 2
+
 [node name="Status" type="Label" parent="Center/Panel/Margin/Form"]
 layout_mode = 2
 custom_minimum_size = Vector2(640, 70)

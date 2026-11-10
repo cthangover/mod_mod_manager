@@ -1,21 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Cthangover.Core.Mods;
-using Cthangover.Core.Mods.Providers;
-using Cthangover.Core.Utils;
-
 namespace Mods.ModManager
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Text.Json;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Cthangover.Core.Mods;
+    using Cthangover.Core.Mods.Providers;
+    using Cthangover.Core.Utils;
+
     /// <summary>
     /// Publishes a private snapshot through the keyserver, re-reading its bearer
     /// on every request. Authentication never follows redirects. The server
@@ -32,9 +32,31 @@ namespace Mods.ModManager
                 () => CreateRequest(catalogUrl, tokenFile, "publishing"), null, 0, 0, cancellation);
             var permissions = answer.Body.ValueKind == JsonValueKind.Object ? answer.Body.Deserialize<PublishingPermissions>() : null;
             if (string.IsNullOrWhiteSpace(permissions?.AuthorId) || permissions.Sections == null
-                || (permissions.SectionPatterns != null && permissions.SectionPatterns.Count > 32) || permissions.MaxArchiveBytes <= 0)
+                || (permissions.SectionPatterns != null && permissions.SectionPatterns.Count > 32) || permissions.MaxArchiveBytes <= 0
+                || permissions.AuthorConsent != null && (string.IsNullOrWhiteSpace(permissions.AuthorConsent.Version)
+                    || !Uri.TryCreate(permissions.AuthorConsent.Url, UriKind.Absolute, out var consentUrl)
+                    || consentUrl.Scheme != Uri.UriSchemeHttps || string.IsNullOrEmpty(consentUrl.Host) || !string.IsNullOrEmpty(consentUrl.UserInfo)))
                 throw new InvalidOperationException("mod_manager/publish_failed");
             return permissions;
+        }
+
+        /// <summary>
+        /// Records an explicit checkbox acceptance on the server before any upload.
+        /// Repeats transient failures with the permission request policy; the server
+        /// makes retries idempotent and remains the authority for the receipt.
+        /// </summary>
+        public static async Task AcceptAuthorConsentAsync(string catalogUrl, string tokenFile, string version, CancellationToken cancellation)
+        {
+            if (string.IsNullOrWhiteSpace(version))
+                throw new InvalidOperationException("mod_manager/publish_consent_required");
+            using var handler = new HttpClientHandler { AllowAutoRedirect = false };
+            using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
+            var acceptance = new AuthorConsentRequest(catalogUrl, tokenFile, version);
+            var answer = await SendAsync(client, new TransferRetry(PermissionFailures), acceptance.Create,
+                null, 0, 0, cancellation);
+            if (answer.Body.ValueKind != JsonValueKind.Object || !answer.Body.TryGetProperty("accepted", out var accepted)
+                || accepted.ValueKind != JsonValueKind.True)
+                throw new InvalidOperationException("mod_manager/publish_consent_required");
         }
 
         /// <summary>Attempts of the permission check before the dialog reports a failure.</summary>
@@ -56,6 +78,8 @@ namespace Mods.ModManager
             CancellationToken cancellation, IProgress<PublishProgress> progress = null)
         {
             var permissions = await GetPermissionsAsync(catalogUrl, tokenFile, cancellation);
+            if (!permissions.IsAdmin && permissions.AuthorConsent is { Accepted: false })
+                throw new InvalidOperationException("mod_manager/publish_consent_required");
             if (!permissions.AllowsSection(section))
                 throw new InvalidOperationException("mod_manager/publish_denied");
             var directory = Path.Combine(Path.GetTempPath(), "cthangover-publish-" + Guid.NewGuid().ToString("N"));
@@ -153,6 +177,10 @@ namespace Mods.ModManager
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     using var response = await client.SendAsync(request, stall.Token);
                     var body = await ReadBodyAsync(response, stall.Token);
+                    // A nickname refusal is final, even if a response also has
+                    // an offset. Never interpret it as upload progress or retry it.
+                    if (response.StatusCode == HttpStatusCode.Conflict && ErrorCode(body) == "author_name_taken")
+                        ThrowRefusal(response, body);
                     var reported = Offset(body);
                     if (reported is { } next && next >= 0 && next <= size && (response.IsSuccessStatusCode
                         || response.StatusCode == HttpStatusCode.Conflict || response.StatusCode == HttpStatusCode.BadRequest))
@@ -203,6 +231,10 @@ namespace Mods.ModManager
                     using var request = create();
                     using var response = await client.SendAsync(request, stall.Token);
                     var body = await ReadBodyAsync(response, stall.Token);
+                    // A nickname refusal is final, even if a response also has
+                    // an offset. Never interpret it as upload progress or retry it.
+                    if (response.StatusCode == HttpStatusCode.Conflict && ErrorCode(body) == "author_name_taken")
+                        ThrowRefusal(response, body);
                     var busy = response.StatusCode == HttpStatusCode.Conflict && ErrorCode(body) == "upload_busy";
                     if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Conflict && Offset(body) != null
                         || IsLostSession(response, body))
@@ -321,7 +353,7 @@ namespace Mods.ModManager
             return values;
         }
 
-        private static HttpRequestMessage CreateRequest(string catalogUrl, string tokenFile, string operation)
+        internal static HttpRequestMessage CreateRequest(string catalogUrl, string tokenFile, string operation)
         {
             var uri = new Uri(catalogUrl, UriKind.Absolute);
             if (uri.AbsolutePath != "/v1/catalog" || string.IsNullOrEmpty(tokenFile))
@@ -343,8 +375,18 @@ namespace Mods.ModManager
             ThrowRefusal(response, await ReadBodyAsync(response, cancellation));
         }
 
-        private static void ThrowRefusal(HttpResponseMessage response, JsonElement body)
+        /// <summary>
+        /// Throws a final publishing refusal as a stable locale key. Upload
+        /// recovery calls this before accepting offsets for a taken nickname;
+        /// the resulting exception is not a transient transport failure.
+        /// </summary>
+        public static void ThrowRefusal(HttpResponseMessage response, JsonElement body)
         {
+            if (response.StatusCode == HttpStatusCode.Conflict && ErrorCode(body) == "author_name_taken")
+                throw new InvalidOperationException("mod_manager/publish_author_name");
+            if (response.StatusCode == HttpStatusCode.Forbidden && ErrorCode(body) == "author_consent_required"
+                || response.StatusCode == HttpStatusCode.BadRequest && ErrorCode(body) == "invalid_consent_version")
+                throw new InvalidOperationException("mod_manager/publish_consent_required");
             if (response.StatusCode == HttpStatusCode.Forbidden && ErrorCode(body) == "mod_limit_reached")
                 throw new InvalidOperationException("mod_manager/publish_mod_limit");
             var message = response.StatusCode switch

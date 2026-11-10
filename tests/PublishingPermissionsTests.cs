@@ -28,6 +28,22 @@ namespace Mods.ModManager.Tests
             ModAssert.True(original.IsAdmin == restored.IsAdmin, "roundtrip admin role");
             ModAssert.True(original.SectionPatterns.SequenceEqual(restored.SectionPatterns), "roundtrip masks");
         }
+        [ModTest("publishing/consent_permissions_json")]
+        static void ConsentPermissionsJson(ModTestContext context)
+        {
+            foreach (var accepted in new[] { false, true })
+            {
+                var original = JsonSerializer.Deserialize<PublishingPermissions>("{\"author_id\":\"author\",\"author_consent\":{\"version\":\"2026-11-09\",\"url\":\"https://cthangover.ru/consent-author.html\",\"accepted\":" + (accepted ? "true" : "false") + "}}");
+                ModAssert.Equal("2026-11-09", original.AuthorConsent.Version, "consent revision");
+                ModAssert.Equal("https://cthangover.ru/consent-author.html", original.AuthorConsent.Url, "consent URL");
+                ModAssert.True(original.AuthorConsent.Accepted == accepted, "server acceptance");
+                var restored = JsonSerializer.Deserialize<PublishingPermissions>(JsonSerializer.Serialize(original));
+                ModAssert.Equal(original.AuthorConsent.Version, restored.AuthorConsent.Version, "roundtrip consent revision");
+                ModAssert.Equal(original.AuthorConsent.Url, restored.AuthorConsent.Url, "roundtrip consent URL");
+                ModAssert.True(restored.AuthorConsent.Accepted == accepted, "roundtrip server acceptance");
+            }
+        }
+
         [ModTest("publishing/masked_sections")]
         static void MaskedSections(ModTestContext context)
         {
@@ -48,6 +64,7 @@ namespace Mods.ModManager.Tests
         static void LegacyPermissions(ModTestContext context)
         {
             var permissions = JsonSerializer.Deserialize<PublishingPermissions>("{\"author_id\":\"old\",\"sections\":[\"story\"],\"max_archive_bytes\":1024}");
+            ModAssert.True(permissions.AuthorConsent == null, "old servers require no consent");
             ModAssert.False(permissions.IsAdmin, "old servers never imply admin");
             ModAssert.True(permissions.AllowsSection("story"), "legacy literal grant");
             ModAssert.False(permissions.AllowsSection("other"), "legacy grant stays literal");

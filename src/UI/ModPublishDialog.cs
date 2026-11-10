@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Cthangover.Core.Mods;
 using Cthangover.Mods.Interface.Base.Lists;
 using Godot;
@@ -11,6 +12,11 @@ namespace Mods.ModManager
     public partial class ModPublishDialog : ModWidget
     {
         private const string Form = "Center/Panel/Margin/Form/";
+        private Control consentBlock;
+        private RichTextLabel consentText;
+        private Label consentLanguage;
+        private Button consentWebsite;
+        private CheckBox consentCheck;
         private readonly List<CatalogServer> servers = new();
         private readonly CancellationTokenSource lifetime = new();
         private ModInfo mod;
@@ -32,6 +38,13 @@ namespace Mods.ModManager
 
         protected override void Construct()
         {
+            consentBlock = GetNode<Control>(Form + "Consent");
+            consentText = GetNode<RichTextLabel>(Form + "Consent/Text");
+            consentLanguage = GetNode<Label>(Form + "Consent/Language");
+            consentWebsite = GetNode<Button>(Form + "Consent/Website");
+            consentCheck = GetNode<CheckBox>(Form + "Consent/Accept");
+            consentWebsite.Pressed += OnConsentWebsite;
+            consentCheck.Toggled += OnConsentToggled;
             serverChoice = GetNode<OptionButton>(Form + "Server");
             sectionChoice = GetNode<OptionButton>(Form + "Section");
             sectionInput = GetNode<LineEdit>(Form + "CustomSection/Name");
@@ -85,6 +98,7 @@ namespace Mods.ModManager
                 return;
             var current = ++selectionVersion;
             permissions = null;
+            ConfigureConsent();
             sectionChoice.Clear();
             sectionInput.Text = "";
             customSection.Visible = false;
@@ -98,6 +112,7 @@ namespace Mods.ModManager
                 if (!GodotObject.IsInstanceValid(this) || current != selectionVersion)
                     return;
                 permissions = received;
+                ConfigureConsent();
                 customSection.Visible = permissions.AllowsCustomSection;
                 createSection.Visible = permissions.IsAdmin;
                 foreach (var section in permissions.Sections)
@@ -124,6 +139,13 @@ namespace Mods.ModManager
             try
             {
                 var server = servers[serverChoice.Selected];
+                if (!permissions.IsAdmin && permissions.AuthorConsent is { Accepted: false } consent)
+                {
+                    await CatalogPublisher.AcceptAuthorConsentAsync(server.Url, server.TokenFile, consent.Version, lifetime.Token);
+                    if (!GodotObject.IsInstanceValid(this)) return;
+                    consent.Accepted = true;
+                    ConfigureConsent();
+                }
                 // Progress<T> posts to Godot's synchronization context (main thread).
                 var progress = new Progress<PublishProgress>(state =>
                 {
@@ -146,8 +168,9 @@ namespace Mods.ModManager
             {
                 if (GodotObject.IsInstanceValid(this))
                 {
-                    ShowError(error);
-                    publish.Disabled = false;
+                    if (error.Message == "mod_manager/publish_consent_required")
+                        await RefreshConsentAsync();
+                    if (GodotObject.IsInstanceValid(this)) ShowError(error);
                 }
             }
             finally
@@ -158,6 +181,64 @@ namespace Mods.ModManager
                 }
             }
         }
+
+        private void ConfigureConsent()
+        {
+            consentCheck.SetPressedNoSignal(false);
+            consentText.Text = "";
+            consentBlock.Visible = permissions?.IsAdmin == false && permissions.AuthorConsent is { Accepted: false };
+            if (!consentBlock.Visible) return;
+            var consent = permissions.AuthorConsent;
+            var bundled = consent.Version == AuthorConsentDocument.Version;
+            consentText.Visible = bundled;
+            consentLanguage.Visible = bundled;
+            consentLanguage.Text = Tr("mod_manager/publish_consent_language");
+            consentCheck.Text = bundled ? Tr("mod_manager/publish_consent_accept")
+                : string.Format(Tr("mod_manager/publish_consent_accept_link"), consent.Version);
+            consentWebsite.Disabled = !TryConsentUrl(out _);
+            if (bundled && ModRegistry.Instance.AllDiscoveredMods.TryGetValue("mod_manager", out var owner))
+            {
+                // The provider also reads packaged mods; the document is shown verbatim in the reader's
+                // language when a translation is bundled, and is never parsed as BBCode or auto-translated.
+                AuthorConsentDocument.Resolve(TranslationServer.GetLocale(), owner.FileProvider.FileExists,
+                    out var document, out var native);
+                if (native)
+                    consentLanguage.Text = Tr("mod_manager/publish_consent_language_native");
+                consentText.Text = owner.FileProvider.ReadFileText(document);
+                consentText.ScrollToLine(0);
+            }
+        }
+
+        private async Task RefreshConsentAsync()
+        {
+            if (permissions?.AuthorConsent != null) permissions.AuthorConsent.Accepted = false;
+            ConfigureConsent();
+            try
+            {
+                var server = servers[serverChoice.Selected];
+                var received = await CatalogPublisher.GetPermissionsAsync(server.Url, server.TokenFile, lifetime.Token);
+                if (!GodotObject.IsInstanceValid(this)) return;
+                permissions = received;
+                ConfigureConsent();
+            }
+            catch (OperationCanceledException) { }
+            catch
+            {
+                // No stale permission may enable publication after a rejected consent.
+                if (GodotObject.IsInstanceValid(this)) permissions = null;
+            }
+        }
+
+        private bool TryConsentUrl(out Uri url)
+            => Uri.TryCreate(permissions?.AuthorConsent?.Url, UriKind.Absolute, out url)
+                && url.Scheme == Uri.UriSchemeHttps && !string.IsNullOrEmpty(url.Host) && string.IsNullOrEmpty(url.UserInfo);
+
+        private void OnConsentWebsite()
+        {
+            if (TryConsentUrl(out var url)) OS.ShellOpen(url.AbsoluteUri);
+        }
+
+        private void OnConsentToggled(bool value) => UpdateActions();
 
         private string SelectedSection()
             => customSection.Visible ? sectionInput.Text.Trim()
@@ -173,7 +254,9 @@ namespace Mods.ModManager
         private void UpdateActions()
         {
             if (publish == null) return;
-            publish.Disabled = busy || permissions?.AllowsSection(SelectedSection()) != true;
+            publish.Disabled = busy || permissions?.AllowsSection(SelectedSection()) != true
+                || !permissions.IsAdmin && permissions.AuthorConsent is { Accepted: false } && !consentCheck.ButtonPressed;
+            consentCheck.Disabled = busy;
             createSection.Disabled = busy || permissions?.IsAdmin != true || !permissions.AllowsSection(sectionInput.Text.Trim());
             sectionChoice.Disabled = busy || sectionChoice.ItemCount == 0;
         }

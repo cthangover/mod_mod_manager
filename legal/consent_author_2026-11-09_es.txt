@@ -1,0 +1,123 @@
+CONSENTIMIENTO
+
+para el tratamiento de datos personales del autor del mod al publicar el mod en el catálogo privado de cthangover
+
+Edición de 9 de noviembre de 2026
+
+1. A quién se otorga el consentimiento
+
+1.1. El presente consentimiento se otorga a Isaev Ilya Viktorovich, INN 673206026792, que aplica el régimen fiscal especial «Impuesto sobre la renta profesional», ciudad de Smolensk, óblast de Smolensk (en lo sucesivo, el Responsable).
+
+1.2. La dirección de correo electrónico del Responsable: vpcoder@ya.ru. Teléfono: +7 920 332-33-47.
+
+1.3. Sitio del Responsable: https://cthangover.ru (en lo sucesivo, el Sitio). El catálogo privado de mods de cthangover, al que se concede el acceso mediante una clave personal (en lo sucesivo, el Catálogo). La ampliación del motor de juego cthangover publicada en el Catálogo (en lo sucesivo, el mod).
+
+2. Procedimiento de otorgamiento del consentimiento y su objeto
+
+2.1. El presente consentimiento lo otorga el suscriptor que tiene la intención de publicar sus propios mods en el Catálogo, mediante una acción activa: marcar un elemento del formulario que no está marcado de antemano o pulsar el botón de confirmación en la primera publicación de un mod.
+
+2.2. El consentimiento está formalizado de forma separada de la demás información y documentos que confirma el interesado, incluida, en particular, la separación de la Oferta pública y del consentimiento para el tratamiento de datos personales, conforme al apartado 1 del artículo 9 de la Ley Federal n.º 152-FZ de 27 de julio de 2006 «Sobre los datos personales».
+
+2.3. El otorgamiento del presente consentimiento es voluntario. La negativa a otorgarlo no impide celebrar el contrato bajo las condiciones de la Oferta pública, el acceso a las secciones del Catálogo, la instalación de mods ni la recepción de soporte. Sin el presente consentimiento no se efectúa únicamente la publicación de los mods propios del suscriptor en el Catálogo, pues dicha publicación supone la visualización del nombre del autor.
+
+2.4. El Responsable conserva la información sobre el hecho, la fecha, la hora y el alcance del consentimiento otorgado, así como sobre la edición de su texto, durante la vigencia del consentimiento y 1 (un) año después de su terminación.
+
+3. Finalidades del tratamiento de datos personales
+
+3.1. La visualización del nombre del autor del mod a los usuarios del Catálogo con acceso a la sección en la que está colocado el mod.
+
+3.2. La asignación del identificador del mod publicado a su autor, que excluye la utilización de dicho identificador por otra persona.
+
+3.3. El mantenimiento de la información sobre los mods publicados por el interesado y sobre sus versiones, incluso para el restablecimiento de la publicación y para el examen de las comunicaciones sobre el contenido del mod.
+
+3.4. El examen de las comunicaciones y de las objeciones del interesado relacionadas con la publicación de sus mods.
+
+4. Lista de los datos personales cuyo tratamiento se consiente
+
+4.1. El nombre que el interesado ha indicado como nombre del autor de mods. Dicho nombre puede ser tanto un nombre ficticio como el nombre y el apellido reales del interesado, si los indicó por sí mismo.
+
+4.2. La información sobre los mods publicados: sus identificadores, denominaciones, descripciones, versiones y fechas de publicación.
+
+4.3. La dirección de correo electrónico utilizada para las notificaciones relacionadas con la publicación de mods.
+
+4.4. Las categorías especiales de datos personales y los datos personales biométricos no se tratan.
+
+5. Modo de visualización del nombre del autor y círculo de personas con acceso
+
+5.1. El nombre del autor viene determinado por el registro en la clave de acceso personal del interesado y no se toma de los archivos del mod.
+
+5.2. El nombre del autor se muestra a los usuarios del Catálogo con acceso a la sección en la que está colocado el mod. El acceso a la sección se concede mediante claves personales emitidas por el Responsable, es decir, a un círculo determinado de personas.
+
+5.3. El Responsable no efectúa la difusión del nombre del autor a un círculo ilimitado de personas. En el catálogo abierto de mods y en las páginas del Sitio no se coloca el nombre del autor de un mod publicado en el Catálogo.
+
+5.4. El presente consentimiento no constituye consentimiento para el tratamiento de los datos personales autorizados por el interesado para su difusión, previsto por el artículo 10.1 de la Ley Federal «Sobre los datos personales».
+
+5.5. Si el Responsable decide colocar la información sobre los autores de mods en acceso abierto, dicha colocación se efectuará únicamente sobre la base de un consentimiento aparte formalizado conforme al artículo 10.1 de la Ley Federal «Sobre los datos personales».
+
+6. Información sobre las consecuencias de la publicación, explicadas al interesado
+
+6.1. El nombre del autor se transfiere a los usuarios del Catálogo junto con la información sobre el mod y se conserva en las copias del mod recibidas por dichos usuarios.
+
+6.2. Las copias del mod se encuentran en los dispositivos de los usuarios que las recibieron. El Responsable no tiene acceso a ellas y no puede modificarlas ni eliminarlas. La retirada del mod de la publicación, la revocación del presente consentimiento y la destrucción del nombre del autor en el lado del Responsable no conllevan la modificación ni la eliminación de las copias recibidas previamente.
+
+6.3. El Responsable recomienda al interesado indicar como nombre del autor un nombre que no contenga su nombre y apellido reales.
+
+6.4. Conforme al artículo 1265 del Código Civil de la Federación de Rusia, el interesado puede utilizar el mod bajo un nombre ficticio (seudónimo) o sin indicación del nombre. La elección del nombre del autor la efectúa el interesado por sí mismo.
+
+6.5. La indicación por el interesado de su nombre y apellido reales como nombre del autor significa que dicha información pasa a ser conocida por los usuarios del Catálogo con acceso a la sección correspondiente y se conserva en las copias del mod recibidas por ellos.
+
+7. Lista de acciones con los datos personales y métodos de tratamiento
+
+7.1. El consentimiento se otorga para efectuar las siguientes acciones: recopilación, registro, sistematización, acumulación, conservación, rectificación, extracción, utilización, comunicación, acceso, despersonalización, bloqueo, supresión y destrucción de datos personales.
+
+7.2. El tratamiento se efectúa tanto con utilización de medios automatizados como sin utilización de tales medios.
+
+7.3. El registro, la sistematización, la acumulación, la conservación, la rectificación y la extracción de los datos personales se efectúan utilizando bases de datos ubicadas en el territorio de la Federación de Rusia. No se efectúa transferencia transfronteriza de datos personales.
+
+7.4. Los datos personales no se transfieren a terceros para su utilización independiente en fines propios ni se utilizan para la elaboración de perfiles.
+
+8. Vigencia del consentimiento y plazos de tratamiento
+
+8.1. El consentimiento está vigente durante el plazo de alojamiento de los mods del interesado en el Catálogo y 30 (treinta) días tras la retirada de la publicación del último de ellos, salvo que sea revocado antes.
+
+8.2. El nombre del autor se conserva durante el plazo de alojamiento del mod en el Catálogo y 30 (treinta) días tras la retirada del mod de la publicación, tras lo cual se destruye.
+
+8.3. La información sobre los identificadores de mods asignados al autor se conserva durante el plazo de alojamiento del mod en el Catálogo y, en lo relativo a la asignación del identificador: hasta la comunicación del interesado sobre la exclusión de dicha información.
+
+9. Procedimiento de revocación del consentimiento
+
+9.1. El interesado puede revocar el presente consentimiento en cualquier momento, dirigiendo una comunicación a la dirección de correo electrónico vpcoder@ya.ru. La revocación no requiere explicación de motivos.
+
+9.2. La revocación del consentimiento significa la cesación de la visualización del nombre del autor y conlleva la retirada de la publicación de los mods publicados por el interesado, pues la publicación de un mod en el Catálogo sin visualización del nombre de su autor no se efectúa técnicamente. La retirada de los mods de la publicación se efectúa en un plazo no superior a 3 (tres) días laborables desde la fecha de recepción de la revocación.
+
+9.3. El Responsable destruye el nombre del autor en un plazo no superior a 30 (treinta) días desde la fecha de recepción de la revocación, salvo que su conservación se requiera para cumplir las obligaciones impuestas al Responsable por la legislación de la Federación de Rusia.
+
+9.4. La revocación del consentimiento no conlleva la revocación de la clave de acceso, no cesa el acceso del interesado a las secciones del Catálogo ni afecta a su derecho a la devolución de los fondos.
+
+9.5. Las consecuencias de la revocación del consentimiento respecto de las copias del mod recibidas previamente por los usuarios del Catálogo se determinan conforme al punto 6.2 del presente consentimiento.
+
+9.6. El interesado puede, en lugar de revocar el consentimiento, cambiar el nombre del autor, dirigiéndose al Responsable. El nombre modificado se aplica a los mods desde el momento de la reemisión de la clave de acceso y no modifica las copias del mod recibidas previamente por los usuarios.
+
+10. Derechos del interesado
+
+10.1. El interesado puede obtener la información relativa al tratamiento de sus datos personales en el alcance previsto por el apartado 7 del artículo 14 de la Ley Federal «Sobre los datos personales».
+
+10.2. El interesado puede exigir la rectificación de sus datos personales, su bloqueo o su destrucción en los casos previstos por la ley.
+
+10.3. El interesado puede exigir la retirada de la publicación de sus mods conforme al procedimiento previsto por la Oferta pública.
+
+10.4. El interesado puede recurrir los actos o la inacción del Responsable ante la autoridad competente para la protección de los derechos de los interesados o por vía judicial.
+
+10.5. El procedimiento de ejercicio de los derechos y los plazos de examen de las solicitudes están establecidos en la Política relativa al tratamiento de datos personales.
+
+11. Confirmaciones del interesado
+
+11.1. Al otorgar el presente consentimiento, el interesado confirma que actúa libremente, por su propia voluntad y en su propio interés.
+
+11.2. El interesado confirma que ha conocido la Política relativa al tratamiento de datos personales y la Oferta pública, publicados en el Sitio.
+
+11.3. El interesado confirma que la información sobre las consecuencias de la publicación expuesta en la sección 6 del presente consentimiento le ha sido explicada y le resulta comprensible, incluida la imposibilidad de modificar y eliminar las copias del mod recibidas por los usuarios del Catálogo.
+
+11.4. El interesado confirma que posee la capacidad de obrar necesaria para otorgar el presente consentimiento y, si tiene entre catorce y dieciocho años: que el consentimiento se otorga con el consentimiento de su representante legal.
+
+11.5. La edición vigente del presente consentimiento se publica en el Sitio. La fecha de la edición está indicada al comienzo del documento.

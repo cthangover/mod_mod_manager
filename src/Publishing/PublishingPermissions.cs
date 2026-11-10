@@ -19,6 +19,10 @@ namespace Mods.ModManager
         [JsonPropertyName("max_archive_bytes")]
         public long MaxArchiveBytes { get; set; }
 
+        /// <summary>Absent on servers that do not require a separate publication consent.</summary>
+        [JsonPropertyName("author_consent")]
+        public AuthorConsentPermissions AuthorConsent { get; set; }
+
         /// <summary>Whether the form may offer a concrete name beyond its current section list.</summary>
         [JsonIgnore]
         public bool AllowsCustomSection
