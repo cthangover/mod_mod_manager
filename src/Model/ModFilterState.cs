@@ -19,7 +19,7 @@ namespace Mods.ModManager
         public HashSet<ModItemStatus> Statuses { get; } = new();
 
         /// <summary>Selected categories; empty means no category restriction.</summary>
-        public HashSet<CategoryType> Categories { get; } = new();
+        public HashSet<string> Categories { get; } = new(ModCategories.Comparer);
 
         /// <summary>Null selects all catalogs; empty selects local-only mods; otherwise matches an exact source URL.</summary>
         public string CatalogUrl { get; set; }
@@ -116,15 +116,7 @@ namespace Mods.ModManager
         }
 
         private bool MatchesCategories(ModCardData item)
-            => Categories.Count == 0 || (item.Category & AsFlags()) != 0;
-
-        private CategoryType AsFlags()
-        {
-            var flags = (CategoryType)0;
-            foreach (var category in Categories)
-                flags |= category;
-            return flags;
-        }
+            => Categories.Count == 0 || Categories.Overlaps(item.AllCategories);
 
         private static bool Contains(string value, string query)
             => !string.IsNullOrEmpty(value) && value.Contains(query, StringComparison.OrdinalIgnoreCase);

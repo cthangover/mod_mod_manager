@@ -2,6 +2,7 @@ namespace Mods.ModManager
 {
     using System;
     using System.IO;
+    using System.Collections.Generic;
     using System.Text;
     using Cthangover.Core.Mods;
     using Cthangover.Core.Utils;
@@ -32,7 +33,7 @@ namespace Mods.ModManager
         /// Creates <c>&lt;modsRoot&gt;/&lt;id&gt;/</c>. <paramref name="path"/> is the new folder when the outcome is
         /// <see cref="Outcome.Created"/>, else null. <paramref name="language"/> is the player's language code.
         /// </summary>
-        public static Outcome Create(string id, string name, string description, string dependency, string language, out string path)
+        public static Outcome Create(string id, string name, string description, string dependency, string language, out string path, IEnumerable<string> categories = null)
         {
             path = null;
             if (!NewModTemplate.IsValidName(name))
@@ -56,7 +57,7 @@ namespace Mods.ModManager
                 foreach (var sub in NewModTemplate.Folders)
                     Directory.CreateDirectory(Path.Combine(folder, sub));
 
-                File.WriteAllText(Path.Combine(folder, "manifest.json"), NewModTemplate.Manifest(id, name, description, dependency), Utf8);
+                File.WriteAllText(Path.Combine(folder, "manifest.json"), NewModTemplate.Manifest(id, name, description, dependency, categories), Utf8);
                 var locale = Path.Combine(folder, "locale");
                 var stub = NewModTemplate.Locale(id, name, description);
                 File.WriteAllText(Path.Combine(locale, "en.properties"), stub, Utf8);

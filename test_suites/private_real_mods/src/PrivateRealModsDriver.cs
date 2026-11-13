@@ -423,7 +423,7 @@ namespace Mods.ModManager.PrivateRealModsTest
 
         private static CatalogExportEntry Entry(ModInfo mod) => new()
         {
-            Id = mod.Id, Name = mod.Name, Version = mod.Version, Category = mod.Manifest.Category ?? CategoryType.Other,
+            Id = mod.Id, Name = mod.Name, Version = mod.Version, Categories = ModCategories.Normalize(mod.Manifest.Categories),
             Depends = mod.Manifest.Depends?.Select(d => d.ToString()).ToList()
         };
 

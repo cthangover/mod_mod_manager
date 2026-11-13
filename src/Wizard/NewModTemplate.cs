@@ -64,7 +64,7 @@ namespace Mods.ModManager
         }
 
         /// <summary>The manifest text: id, title, description, version 0.1.0 and one dependency; LF line ends, a final newline.</summary>
-        public static string Manifest(string id, string name, string description, string dependency)
+        public static string Manifest(string id, string name, string description, string dependency, IEnumerable<string> categories = null)
         {
             var root = new JsonObject
             {
@@ -73,7 +73,7 @@ namespace Mods.ModManager
                 ["version"] = "0.1.0",
                 ["author"] = "player",
                 ["description"] = Line(description),
-                ["category"] = "story",
+                ["categories"] = new JsonArray(ModCategories.Normalize(categories).Select(code => JsonValue.Create(code)).ToArray()),
                 ["sources"] = new JsonArray(JsonValue.Create("src/**/*.cs")),
                 ["depends"] = new JsonArray(JsonValue.Create(dependency)),
             };

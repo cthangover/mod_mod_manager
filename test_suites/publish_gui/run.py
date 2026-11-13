@@ -27,7 +27,7 @@ class PublicCatalog(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         type(self).leaked |= bool(self.headers.get("Authorization"))
         raw = json.dumps({"catalog": {"version": 1}, "mods": [
-            {"id": "public_test_pack", "name": "Public catalog test", "version": "1.0.0", "category": "other"}
+            {"id": "public_test_pack", "name": "Public catalog test", "version": "1.0.0", "categories": ["other"]}
         ], "collections": []}).encode()
         self.send_response(200)
         self.send_header("Content-Length", str(len(raw)))
@@ -80,21 +80,26 @@ def main():
             cli(args.issuer, "issue", "--issuer", "keys/issuer.json", "--user", "Administrator", "--admin", "--expires",
                 (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ"), "--out", "admin.token")
             cli(args.server, "import", "--record", "admin.token.record.json")
-            if suite in ("catalog_servers", "private_catalog"):
+            if suite in ("publish_gui", "catalog_servers", "private_catalog"):
                 archives = fixture / "private/archives"
                 archives.mkdir(parents=True)
                 archive = archives / "probe.zip"
                 with zipfile.ZipFile(archive, "w") as zip:
-                    zip.writestr("manifest.json", json.dumps({"id": "private_test_pack", "version": "1.0.0", "name": "Private catalog test", "category": "other"}))
+                    zip.writestr("manifest.json", json.dumps({"id": "private_test_pack", "version": "1.0.0", "name": "Private catalog test", "categories": ["RPG", "Weap ons! 世界"]}))
                     zip.writestr("data/check.txt", "Private catalog download works.")
-                source = {"sections": [{"id": "local_test", "mods": [{"id": "private_test_pack", "version": "1.0.0", "name": "Private catalog test", "category": "other", "downloads": [{"version": "1.0.0", "file_ids": ["probe"]}]}]}],
+                source = {"sections": [{"id": "local_test", "mods": [{"id": "private_test_pack", "version": "1.0.0", "name": "Private catalog test", "categories": ["RPG", "Weap ons! 世界"], "downloads": [{"version": "1.0.0", "file_ids": ["probe"]}]}]}],
                           "files": [{"id": "probe", "path": "probe.zip", "name": "probe.zip", "sha256": hashlib.sha256(archive.read_bytes()).hexdigest()}]}
+                if suite == "publish_gui":
+                    source["sections"][0]["mods"].append({"id": "private_test_untranslated", "version": "1.0.0", "name": "Custom untranslated category", "categories": ["rpg", "Новая категория"]})
+                if suite == "publish_gui":
+                    source["sections"][0]["mods"][0]["categories"] += ["Свободная категория " + str(i) for i in range(18)]
+                    source["sections"][0]["mods"][1]["categories"] += ["Свободная категория " + str(i) for i in range(18, 36)]
                 (fixture / "source.json").write_text(json.dumps(source))
                 cli(args.server, "import-catalog", "--file", "source.json")
             if suite == "publishing":
                 disk = fixture / "private/mods/admin_storage/test_storage_pack/1.0.0"
                 disk.mkdir(parents=True)
-                (disk / "manifest.json").write_text(json.dumps({"id": "test_storage_pack", "version": "1.0.0", "name": "Filesystem storage test", "category": "other"}))
+                (disk / "manifest.json").write_text(json.dumps({"id": "test_storage_pack", "version": "1.0.0", "name": "Filesystem storage test", "categories": ["other"]}))
                 (disk / "content.txt").write_text("Storage discovered automatically.")
                 (disk / ".ready").touch()
             launcher_key = None
@@ -153,6 +158,8 @@ def main():
             if launcher_key:
                 env["CTHANGOVER_PUBLISH_TOKEN_FILE"] = str(launcher_key)
                 env["CTHANGOVER_PUBLISH_EXPECTED_AUTHOR"] = "local-tester"
+            if args.windowed:
+                env["CTHANGOVER_E2E_SHOTS"] = str(output / "shots" / suite)
             try:
                 with (output / (suite + "-server.log")).open("wb") as server_log:
                     server = subprocess.Popen([str(args.server.resolve()), "serve", "--listen", "127.0.0.1:18080", "--public-base-url", "http://127.0.0.1:18080", "--insecure-local-http"], cwd=fixture, stdout=server_log, stderr=server_log)
@@ -207,6 +214,12 @@ def main():
                         if expected_empty_scenes != 1:
                             errors.append("frontend scene diagnostic count differs")
                         valid &= not errors and not PublicCatalog.leaked
+                        if args.windowed and suite == "publish_gui":
+                            shots = list((output / "shots" / suite).glob("*.png"))
+                            digests = {hashlib.sha256(path.read_bytes()).hexdigest() for path in shots}
+                            if len(shots) != 5 or len(digests) != 5:
+                                valid = False
+                                errors.append("expected five pairwise distinct category screenshots")
                         results.append({"suite": suite, "passed": valid, "exit": result.returncode, "errors": errors})
                         print(json.dumps(results[-1]), flush=True)
                     finally:

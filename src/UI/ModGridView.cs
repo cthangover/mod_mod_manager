@@ -1,7 +1,9 @@
+using Cthangover.Mods.Interface.View;
 namespace Mods.ModManager
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Cthangover.Core.Mods;
     using Cthangover.Core.Scenes;
     using Cthangover.Core.UI.Theming;
@@ -64,12 +66,12 @@ namespace Mods.ModManager
                 return;
             }
 
-            foreach (var category in ModCategoryNames.Ordered)
+            foreach (var category in ModCategoryNames.Order(items.Select(item => ModCategories.Primary(item.Categories))))
             {
                 var group = new List<ModCardData>();
                 foreach (var item in items)
                 {
-                    if (ModCategoryNames.Primary(item.Category) == category)
+                    if (ModCategories.Comparer.Equals(ModCategories.Primary(item.Categories), category))
                         group.Add(item);
                 }
 

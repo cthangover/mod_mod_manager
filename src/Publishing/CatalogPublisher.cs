@@ -316,7 +316,7 @@ namespace Mods.ModManager
             var entry = new CatalogExportEntry
             {
                 Id = mod.Id, Name = mod.Name, Author = mod.Author, Description = mod.Description,
-                Version = mod.Version, Category = manifest.Category ?? CategoryType.Other,
+                Version = mod.Version, Categories = ModCategories.Normalize(manifest.Categories),
                 Depends = DependencyStrings(manifest.Depends), ConflictsWith = manifest.ConflictsWith,
                 Downloads = new List<CatalogEntryDownload>()
             };
@@ -348,7 +348,7 @@ namespace Mods.ModManager
             entry.Author = packagedManifest.Author;
             entry.Description = packagedManifest.Description;
             entry.Version = packagedManifest.Version;
-            entry.Category = packagedManifest.Category ?? CategoryType.Other;
+            entry.Categories = ModCategories.Normalize(packagedManifest.Categories);
             entry.Depends = DependencyStrings(packagedManifest.Depends);
             entry.ConflictsWith = packagedManifest.ConflictsWith;
             entry.Downloads[0].Version = entry.Version;

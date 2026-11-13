@@ -41,13 +41,13 @@ namespace Mods.ModManager.Tests
             card.Title = "Story Pack";
             card.Author = "Test Author";
             card.Status = ModItemStatus.NotInstalled;
-            card.Category = CategoryType.Story;
+            card.Categories = new List<string> { "story" };
             var filter = new ModFilterState { CatalogUrl = Private, Search = "story" };
             filter.Statuses.Add(ModItemStatus.NotInstalled);
-            filter.Categories.Add(CategoryType.Story);
+            filter.Categories.Add(ModCategories.Story);
             ModAssert.True(filter.Matches(card), "catalog, search, status and category intersect");
             filter.Categories.Clear();
-            filter.Categories.Add(CategoryType.Audio);
+            filter.Categories.Add(ModCategories.Audio);
             ModAssert.False(filter.Matches(card), "category still restricts selected catalog");
             ModAssert.True(filter.MatchesExceptCategory(card), "category counts ignore only category");
             filter.CatalogUrl = Public;
@@ -64,7 +64,7 @@ namespace Mods.ModManager.Tests
         {
             var filter = new ModFilterState { CatalogUrl = Private, Search = "private", Sort = ModSortMode.Author, GroupByCategory = true };
             filter.Statuses.Add(ModItemStatus.NotInstalled);
-            filter.Categories.Add(CategoryType.Audio);
+            filter.Categories.Add(ModCategories.Audio);
             filter.Reset();
             ModAssert.Null(filter.CatalogUrl, "reset returns to all catalogs");
             ModAssert.Equal("", filter.Search, "search cleared");
@@ -72,6 +72,23 @@ namespace Mods.ModManager.Tests
             ModAssert.Equal(0, filter.Categories.Count, "categories cleared");
             ModAssert.Equal((int)ModSortMode.Author, (int)filter.Sort, "sort preserved");
             ModAssert.True(filter.GroupByCategory, "grouping preserved");
+        }
+
+        [ModTest("filters/custom_categories_and_implicit_other")]
+        static void CustomCategories(ModTestContext ctx)
+        {
+            var card = Card("weapon");
+            card.Categories = new List<string> { "weapons", "gameplay" };
+            var filter = new ModFilterState();
+            filter.Categories.Add("weapons");
+            ModAssert.True(filter.Matches(card), "custom category matches");
+            filter.Categories.Clear();
+            filter.Categories.Add("gameplay");
+            ModAssert.True(filter.Matches(card), "secondary category matches");
+            filter.Categories.Clear();
+            filter.Categories.Add("other");
+            ModAssert.True(filter.Matches(Card("empty")), "empty categories use Other");
+            ModAssert.False(filter.Matches(card), "Other does not match a categorized card");
         }
 
         private static ModCardData Card(string id, params string[] sources)

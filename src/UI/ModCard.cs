@@ -1,3 +1,5 @@
+using Cthangover.Core.Mods;
+using Cthangover.Mods.Interface.View;
 using System;
 using Cthangover.Core.UI.Theming;
 using Godot;
@@ -25,6 +27,7 @@ namespace Mods.ModManager
         private TextureRect _image;
         private Label _title;
         private Label _author;
+        private Label _category;
         private Label _source;
         private Label _status;
         private OptionButton _versions;
@@ -64,6 +67,7 @@ namespace Mods.ModManager
             _image = GetNode<TextureRect>("VBox/Cover/Image");
             _title = GetNode<Label>("VBox/Body/Box/Title");
             _author = GetNode<Label>("VBox/Body/Box/Author");
+            _category = GetNode<Label>("VBox/Body/Box/Category");
             _source = GetNode<Label>("VBox/Body/Box/Source");
             _status = GetNode<Label>("VBox/Body/Box/MetaRow/Status");
             _versions = GetNode<OptionButton>("VBox/Body/Box/MetaRow/VersionHost/Versions");
@@ -103,6 +107,8 @@ namespace Mods.ModManager
             _title.Text = _data.Title ?? _data.Id;
             GetNode<Control>("VBox/Cover/DevelopmentFrame").Visible = _data.IsInDevelopment;
             _author.Text = _data.Author ?? string.Empty;
+            _category.Text = ModCategoryNames.Translate(ModCategories.Primary(_data.Categories));
+            _category.TooltipText = string.Join(", ", ModCategories.Effective(_data.Categories));
             UpdateSourceLabel();
             UpdateCollectionsLink();
 

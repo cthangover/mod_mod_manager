@@ -34,7 +34,7 @@ namespace Mods.ModManager.Tests
         [ModTest("new_mod/manifest_is_json_with_one_dependency")]
         static void ManifestIsJson(ModTestContext ctx)
         {
-            var text = NewModTemplate.Manifest("my_first", "My \"first\" mod", "Line one\nline two", "rpg>=0.1.0");
+            var text = NewModTemplate.Manifest("my_first", "My \"first\" mod", "Line one\nline two", "rpg>=0.1.0", new[] { "story", "weapons" });
             ModAssert.False(text.Contains("\r"), "LF line ends");
             ModAssert.True(text.EndsWith("\n") && !text.EndsWith("\n\n"), "one final newline");
             using var document = JsonDocument.Parse(text);
@@ -46,7 +46,11 @@ namespace Mods.ModManager.Tests
             ModAssert.Equal("rpg>=0.1.0", root.GetProperty("depends")[0].GetString(), "dependency");
             ModAssert.Equal(1, root.GetProperty("depends").GetArrayLength(), "one dependency");
             ModAssert.Equal("src/**/*.cs", root.GetProperty("sources")[0].GetString(), "sources glob");
-            ModAssert.Equal("story", root.GetProperty("category").GetString(), "category is a CategoryType name");
+            ModAssert.Equal("story", root.GetProperty("categories")[0].GetString(), "first selected code is primary");
+            ModAssert.Equal("weapons", root.GetProperty("categories")[1].GetString(), "custom selection is retained");
+            var manifest = JsonSerializer.Deserialize<Cthangover.Core.Mods.ModManifest>(text);
+            var restored = JsonSerializer.Deserialize<Cthangover.Core.Mods.ModManifest>(JsonSerializer.Serialize(manifest));
+            ModAssert.True(restored.Categories.SequenceEqual(new[] { "story", "weapons" }), "wizard categories round-trip in order");
             ModAssert.True(text.Contains("\"rpg>=0.1.0\""), "the dependency is written as typed, not escaped");
         }
 

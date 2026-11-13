@@ -118,6 +118,9 @@ theme_override_font_sizes/font_size = 12
 layout_mode = 2
 autowrap_mode = 3
 
+[node name="Categories" type="VBoxContainer" parent="Scroll/Content"]
+layout_mode = 2
+
 [node name="DescriptionBox" type="VBoxContainer" parent="Scroll/Content"]
 layout_mode = 2
 theme_override_constants/separation = 4

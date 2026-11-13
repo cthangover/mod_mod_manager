@@ -156,3 +156,15 @@ To make a first game step by step, with the mouse only, read **Your first game i
 3. **A game card says Missing or Problems.** Open its scheme and the **Check** tab: it lists missing mods, version gaps and conflicts.
 4. **Red "Unsafe" card.** Several catalogs publish a mod with the same ID, but their content hashes differ. It is unknown which copy is genuine, so the cards of this mod from every catalog are marked red. Do not install it and tell the catalog administrators.
 5. **No documentation section.** The mod has no `docs/` guide yet; its manifest description is shown instead.
+
+## Categories
+
+Every string is a category. Enter any name or choose a suggestion from installed mods, catalogs and the ready-translated base names.
+The client trims whitespace, ignores empty names and deduplicates using `OrdinalIgnoreCase`, preserving the first spelling and order.
+There is no client length/count limit. Choose the primary category; it is saved first and determines the card/group label.
+Filters show all categories present in the data, ordered alphabetically by displayed name, with `other` last; the list scrolls without collapsing.
+Translate a name with `mod_category/<name>` in the mod locale; untranslated names keep the first authored spelling.
+**Save categories** in a local detail edits development folders in `mods/` or `mods_private/` without publishing.
+Publication and folder export save before packaging; installed packages and archives are read-only.
+A JSON field that is not an array of strings is a manifest/record type error; a catalog skips only the erroneous record.
+Keyserver input limits are 32 strings, 64 Unicode characters per string, and no control characters.

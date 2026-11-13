@@ -1,5 +1,7 @@
+using Cthangover.Mods.Interface.View;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cthangover.Core.Mods;
 using Cthangover.Core.UI.Theming;
 using Godot;
@@ -18,6 +20,7 @@ namespace Mods.ModManager
     public partial class ModFilterPanel : VBoxContainer
     {
         private ModFilterState _state;
+        private Dictionary<string, int> _categoryCounts = new(ModCategories.Comparer);
         private Label _title;
         private Button _reset;
         private Label _statusCaption;
@@ -28,7 +31,7 @@ namespace Mods.ModManager
         private OptionButton _catalogSelect;
         private readonly Dictionary<string, string> _catalogNames = new(StringComparer.Ordinal);
         private readonly Dictionary<ModItemStatus, CheckBox> _statusBoxes = new();
-        private readonly Dictionary<CategoryType, CheckBox> _categoryBoxes = new();
+        private readonly Dictionary<string, CheckBox> _categoryBoxes = new(ModCategories.Comparer);
 
         /// <summary>Raised after any filter or grouping change.</summary>
         public event Action Changed;
@@ -73,8 +76,6 @@ namespace Mods.ModManager
 
             foreach (var status in Enum.GetValues<ModItemStatus>())
                 AddStatusCheck(status);
-            foreach (var category in ModCategoryNames.Ordered)
-                AddCategoryCheck(category);
         }
 
         /// <summary>Refreshes available source choices after model reload; a removed/disabled selection returns to all catalogs.</summary>
@@ -110,7 +111,7 @@ namespace Mods.ModManager
 
         /// <summary>Refreshes the numbers in the checkbox captions.</summary>
         public void RefreshCounts(
-            Dictionary<CategoryType, int> categoryCounts,
+            Dictionary<string, int> categoryCounts,
             Dictionary<ModItemStatus, int> statusCounts,
             Dictionary<string, int> catalogCounts)
         {
@@ -126,10 +127,18 @@ namespace Mods.ModManager
                 pair.Value.Text = $"{ModStatusNames.Translate(pair.Key)} ({count})";
             }
 
-            foreach (var pair in _categoryBoxes)
+            _categoryCounts = categoryCounts;
+            RebuildCategories();
+        }
+
+        private void RebuildCategories()
+        {
+            foreach (var child in _categoryList.GetChildren()) { _categoryList.RemoveChild(child); child.QueueFree(); }
+            _categoryBoxes.Clear();
+            foreach (var category in ModCategoryNames.Order(_categoryCounts.Keys))
             {
-                var count = categoryCounts.GetValueOrDefault(pair.Key);
-                pair.Value.Text = $"{ModCategoryNames.Translate(pair.Key)} ({count})";
+                AddCategoryCheck(category);
+                _categoryBoxes[category].Text = $"{ModCategoryNames.Translate(category)} ({_categoryCounts[category]})";
             }
         }
 
@@ -145,13 +154,17 @@ namespace Mods.ModManager
             _statusList.AddChild(box);
         }
 
-        private void AddCategoryCheck(CategoryType category)
+        private void AddCategoryCheck(string category)
         {
             var box = new CheckBox
             {
                 Text = ModCategoryNames.Translate(category),
+                ClipText = true,
+                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis,
+                TooltipText = TranslationServer.Translate("mod_categories/hint_filter") + " " + category,
                 ButtonPressed = _state.Categories.Contains(category),
             };
+            box.SetMeta("category", category);
             box.Toggled += pressed => OnCategoryToggled(category, pressed);
             _categoryBoxes[category] = box;
             _categoryList.AddChild(box);
@@ -167,7 +180,7 @@ namespace Mods.ModManager
             Changed?.Invoke();
         }
 
-        private void OnCategoryToggled(CategoryType category, bool pressed)
+        private void OnCategoryToggled(string category, bool pressed)
         {
             if (pressed)
                 _state.Categories.Add(category);

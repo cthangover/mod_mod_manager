@@ -8,6 +8,7 @@ using Cthangover.Core.Bootstrap;
 using Cthangover.Core.Mods;
 using Cthangover.Core.Utils;
 using Godot;
+using Cthangover.Mods.Interface.View;
 
 namespace Mods.ModManager.PublishGui
 {
@@ -37,6 +38,8 @@ namespace Mods.ModManager.PublishGui
         private double elapsed;
         private double openedAt;
         private int step;
+        private byte[] savedManifest;
+        private List<string> savedCategories;
 
         public override void _Process(double delta)
         {
@@ -76,7 +79,8 @@ namespace Mods.ModManager.PublishGui
                 case 1:
                     VerifyStoredKey(authorToken);
                     CloseSources();
-                    OpenPublish();
+                    manager = hub.FindChild("ModManagerScreen", true, false) as ModManagerScreen;
+                    operation = CheckCategoryInterfaces();
                     step++;
                     break;
                 case 2:
@@ -95,6 +99,8 @@ namespace Mods.ModManager.PublishGui
                 case 4:
                     var entry = CatalogService.CachedEntries.FirstOrDefault(value => value.Id == mod.Id)
                         ?? throw new InvalidOperationException("GUI-published mod missing on real server");
+                    if (!entry.Categories.SequenceEqual(new[] { "Weap ons! 世界", "RPG" }))
+                        throw new InvalidOperationException("GUI category order did not reach server");
                     if (entry.Author != (System.Environment.GetEnvironmentVariable("CTHANGOVER_PUBLISH_EXPECTED_AUTHOR") ?? "Publisher") || entry.Version != "0.1.0")
                         throw new InvalidOperationException("server identity or version mismatch");
                     operation = VerifyArchive(entry.Downloads[0].Urls[0]);
@@ -141,7 +147,38 @@ namespace Mods.ModManager.PublishGui
             if (savedServers != null || savedUrls.Count != 0)
                 throw new InvalidOperationException("publish_gui requires an isolated empty profile and catalog configuration");
             mod = (ModInfo)ModRegistry.Instance.AllDiscoveredMods["mod_manager"];
+            savedManifest = File.ReadAllBytes(Path.Combine(mod.FileProvider.RootPath, "manifest.json"));
+            savedCategories = new List<string>(mod.Manifest.Categories);
 
+        }
+
+        private async Task CheckCategoryInterfaces()
+        {
+            await CatalogService.RefreshAsync(forceRefresh: true);
+            await CategoryGuiProbe.CheckCatalog(this, manager);
+            await CategoryGuiProbe.CheckWizard(this);
+            OpenPublish();
+            // First edit the local detail without publication; verify its own Save button writes the manifest.
+            dialog.GetNode<Button>(Form + "Actions/Close").EmitSignal(BaseButton.SignalName.Pressed);
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            dialog = null;
+            var detail = manager.GetNode<ModDetailView>("Margin/Root/Body/Content/Detail");
+            var local = detail.GetNode<ModCategoryEditor>("Scroll/Content/Categories/ModCategoryEditor");
+            CategoryGuiProbe.SelectCustom(local);
+            detail.GetNode<Button>("Scroll/Content/Categories/SaveCategories").EmitSignal(BaseButton.SignalName.Pressed);
+            var stored = JsonSerializer.Deserialize<ModManifest>(File.ReadAllText(Path.Combine(mod.FileProvider.RootPath, "manifest.json")));
+            if (!stored.Categories.SequenceEqual(new[] { "RPG", "Weap ons! 世界" })) throw new InvalidOperationException("local category save lost selection");
+            await CategoryGuiProbe.Capture(this, "categories-local");
+            detail.GetNode<Button>("Scroll/Content/ActionsRow/Publish").EmitSignal(BaseButton.SignalName.Pressed);
+            dialog = manager.FindChild("ModPublishDialog", true, false) as ModPublishDialog;
+            dialog.Published += OnPublished;
+            var publishing = dialog.GetNode<ModCategoryEditor>(Form + "Categories/ModCategoryEditor");
+            if (!publishing.Categories.SequenceEqual(stored.Categories)) throw new InvalidOperationException("publication did not start from manifest");
+            var primary = publishing.GetNode<OptionButton>("Layout/PrimaryRow/Primary");
+            primary.Select(1);
+            primary.EmitSignal(OptionButton.SignalName.ItemSelected, 1L);
+            await CategoryGuiProbe.Capture(this, "categories-publish");
+            openedAt = elapsed;
         }
 
         private void OpenSources()
@@ -207,6 +244,8 @@ namespace Mods.ModManager.PublishGui
             if (manifest.RootElement.GetProperty("id").GetString() != "mod_manager"
                 || manifest.RootElement.GetProperty("version").GetString() != "0.1.0")
                 throw new InvalidOperationException("server archive manifest differs from the installed mod");
+            var codes = manifest.RootElement.GetProperty("categories").EnumerateArray().Select(value => value.GetString());
+            if (!codes.SequenceEqual(new[] { "Weap ons! 世界", "RPG" })) throw new InvalidOperationException("published archive categories differ from server entry");
         }
 
         private static ModCard FindCard(Node node)
@@ -227,6 +266,11 @@ namespace Mods.ModManager.PublishGui
         {
             if (finished) return;
             finished = true;
+            if (savedManifest != null)
+            {
+                File.WriteAllBytes(Path.Combine(mod.FileProvider.RootPath, "manifest.json"), savedManifest);
+                mod.Manifest.Categories = savedCategories;
+            }
             if (GodotObject.IsInstanceValid(hub)) hub.QueueFree();
             if (savedUrls != null)
             {

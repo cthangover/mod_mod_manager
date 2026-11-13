@@ -6,6 +6,7 @@ namespace Mods.ModManager
     using Cthangover.Core.Mods;
     using Cthangover.Core.UI.Theming;
     using Godot;
+    using Cthangover.Mods.Interface.View;
 
     /// <summary>
     /// The new-mod wizard's form: a title, an id (suggested from the title until the author types an id), a
@@ -15,10 +16,10 @@ namespace Mods.ModManager
     public static class NewModDialog
     {
         /// <summary>Builds the (not yet shown) dialog. <paramref name="games"/> lists the game ids and titles.</summary>
-        public static AcceptDialog Build(IReadOnlyList<(string Id, string Title)> games, string preselectId, Action<string, string, string, string, string> create)
+        public static AcceptDialog Build(IReadOnlyList<(string Id, string Title)> games, string preselectId, Action<string, string, string, string, string, List<string>> create)
         {
-            var nameEdit = new LineEdit { PlaceholderText = TranslationServer.Translate("mod_manager/newmod_name_tip"), CustomMinimumSize = new Vector2(420, 0) };
-            var idEdit = new LineEdit { PlaceholderText = "my_first_mod", CustomMinimumSize = new Vector2(420, 0) };
+            var nameEdit = new LineEdit { Name = "ModName", PlaceholderText = TranslationServer.Translate("mod_manager/newmod_name_tip"), CustomMinimumSize = new Vector2(420, 0) };
+            var idEdit = new LineEdit { Name = "ModId", PlaceholderText = "my_first_mod", CustomMinimumSize = new Vector2(420, 0) };
             var descEdit = new LineEdit { PlaceholderText = TranslationServer.Translate("mod_manager/newmod_desc_tip"), CustomMinimumSize = new Vector2(420, 0) };
             var baseSelect = new OptionButton { CustomMinimumSize = new Vector2(420, 0) };
             var gameSelect = new OptionButton { CustomMinimumSize = new Vector2(420, 0) };
@@ -43,6 +44,9 @@ namespace Mods.ModManager
             box.AddChild(Row("mod_manager/newmod_desc", descEdit));
             box.AddChild(Row("mod_manager/newmod_base", baseSelect));
             box.AddChild(Row("mod_manager/newmod_collection", gameSelect));
+
+            var categories = ModCategoryEditor.Create(new[] { ModCategories.Story });
+            box.AddChild(categories);
 
             // The id follows the title until the author types an id; the suggestion itself is not a typed id.
             var idTouched = false;
@@ -69,11 +73,12 @@ namespace Mods.ModManager
                 DialogText = TranslationServer.Translate("mod_manager/newmod_hint"),
             };
             dialog.AddChild(box);
+            categories.Changed += () => dialog.GetOkButton().Disabled = categories.HasPendingInput;
             dialog.Confirmed += () =>
             {
                 var dependency = baseSelect.ItemCount == 0 ? NewModTemplate.Bases[0] : baseSelect.GetItemMetadata(baseSelect.Selected).AsString();
                 var game = gameSelect.ItemCount == 0 ? string.Empty : gameSelect.GetItemMetadata(gameSelect.Selected).AsString();
-                create(nameEdit.Text.Trim(), idEdit.Text.Trim(), descEdit.Text.Trim(), dependency, game);
+                create(nameEdit.Text.Trim(), idEdit.Text.Trim(), descEdit.Text.Trim(), dependency, game, categories.Categories);
             };
             return dialog;
         }

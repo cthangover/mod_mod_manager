@@ -1,3 +1,4 @@
+using Cthangover.Mods.Interface.View;
 namespace Mods.ModManager
 {
     using System;
@@ -75,7 +76,7 @@ namespace Mods.ModManager
                     Description = TranslationServer.Translate("mod_manager/archive_locked_description"),
                     IsInstalled = true,
                     UnavailableArchive = archive,
-                    Category = CategoryType.Other,
+                    Categories = new List<string>(),
                 };
                 data.RecomputeStatus();
                 _items.Add(data);
@@ -133,20 +134,26 @@ namespace Mods.ModManager
             DisabledModsStore.Save(disabled);
         }
 
-        /// <summary>Category buckets for the sidebar, respecting every filter except the category set.</summary>
-        public Dictionary<CategoryType, int> CountCategories(ModFilterState filter)
-        {
-            var counts = new Dictionary<CategoryType, int>();
-            foreach (var item in _items)
-            {
-                if (!filter.MatchesExceptCategory(item))
-                    continue;
+        /// <summary>Categories buckets for the sidebar, respecting every filter except the category set.</summary>
+        public Dictionary<string, int> CountCategories(ModFilterState filter)
+            => CountCategories(_items, filter);
 
-                foreach (var category in ModCategoryNames.Ordered)
+        /// <summary>Counts each mod once per effective category across local and catalog variants.</summary>
+        public static Dictionary<string, int> CountCategories(IEnumerable<ModCardData> items, ModFilterState filter)
+        {
+            var counts = new Dictionary<string, int>(ModCategories.Comparer);
+            var seen = new Dictionary<string, HashSet<string>>(ModCategories.Comparer);
+            foreach (var item in items)
+            {
+                var matches = filter.MatchesExceptCategory(item);
+                foreach (var category in item.AllCategories)
                 {
-                    if ((item.Category & category) == 0)
-                        continue;
-                    counts[category] = counts.GetValueOrDefault(category) + 1;
+                    // Keep every category present in the data, even when other facets give it a zero count.
+                    if (!counts.ContainsKey(category)) counts.Add(category, 0);
+                    if (!matches) continue;
+                    if (!seen.TryGetValue(category, out var ids))
+                        seen.Add(category, ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                    if (ids.Add(item.Id)) counts[category]++;
                 }
             }
 
@@ -226,7 +233,7 @@ namespace Mods.ModManager
                 Author = modInfo.Author,
                 Description = modInfo.LocalizedDescription,
                 LocalVersion = modInfo.Version,
-                Category = modInfo.Manifest?.Category ?? CategoryType.Other,
+                Categories = ModCategories.Normalize(modInfo.Manifest?.Categories),
                 LocalInfo = modInfo,
                 Catalog = catalog,
                 IsInstalled = true,
@@ -252,7 +259,7 @@ namespace Mods.ModManager
                 Title = catalog.GetLocalizedName(locale),
                 Author = catalog.Author,
                 Description = catalog.GetLocalizedDescription(locale),
-                Category = catalog.Category,
+                Categories = catalog.Categories,
                 Catalog = catalog,
                 IsInstalled = false,
             };

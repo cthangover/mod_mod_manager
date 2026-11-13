@@ -1889,18 +1889,18 @@ namespace Mods.ModManager
             dialog.Canceled += dialog.QueueFree;
             dialog.Confirmed += dialog.QueueFree;
             AddChild(dialog);
-            dialog.PopupCentered(new Vector2I(660, 380));
+            dialog.PopupCentered(new Vector2I(820, 700));
         }
 
         /// <summary>
         /// Writes the mod's folder, then adds it to the game as its own block ("extra") and saves the drafts: the
         /// game lists the mod at the next start. A refused id changes nothing.
         /// </summary>
-        private void OnNewModConfirmed(string name, string id, string description, string dependency, string gameId)
+        private void OnNewModConfirmed(string name, string id, string description, string dependency, string gameId, List<string> categories)
         {
             var title = TranslationServer.Translate("mod_manager/newmod_title");
             var language = LanguageCode.Normalize(TranslationServer.GetLocale()) ?? "en";
-            var outcome = NewModCreator.Create(id, name, description, dependency, language, out _);
+            var outcome = NewModCreator.Create(id, name, description, dependency, language, out _, categories);
             if (outcome != NewModCreator.Outcome.Created)
             {
                 ShowNotice(title, TranslationServer.Translate(OutcomeMessageKey(outcome)));

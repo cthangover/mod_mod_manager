@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Cthangover.Core.Mods;
 using Cthangover.Mods.Interface.Base.Lists;
 using Godot;
+using Cthangover.Mods.Interface.View;
 
 namespace Mods.ModManager
 {
@@ -19,6 +20,7 @@ namespace Mods.ModManager
         private CheckBox consentCheck;
         private readonly List<CatalogServer> servers = new();
         private readonly CancellationTokenSource lifetime = new();
+        private ModCategoryEditor categories;
         private ModInfo mod;
         private ModCollection collection;
         private string EntityKind => collection == null ? "mod" : "collection";
@@ -41,6 +43,8 @@ namespace Mods.ModManager
 
         protected override void Construct()
         {
+            Resized += FitForm;
+            FitForm();
             consentBlock = GetNode<Control>(Form + "Consent");
             consentText = GetNode<RichTextLabel>(Form + "Consent/Text");
             consentLanguage = GetNode<Label>(Form + "Consent/Language");
@@ -66,6 +70,11 @@ namespace Mods.ModManager
             publish.Disabled = true;
         }
 
+        private void FitForm()
+        {
+            GetNode<Control>("Center/Panel/Margin").CustomMinimumSize = new Vector2(760, Math.Max(300, Math.Min(860, GetViewportRect().Size.Y - 48)));
+        }
+
         /// <summary>Opens for an installed mod; every configured source remains visible with a reason if it cannot publish.</summary>
         public void Open(ModInfo selectedMod)
         {
@@ -89,6 +98,16 @@ namespace Mods.ModManager
         {
             EnsureConstructed();
             GetNode<Label>(Form + "Mod").Text = title;
+            var host = GetNode<Control>(Form + "Categories");
+            host.Visible = collection == null;
+            if (collection == null)
+            {
+                foreach (var child in host.GetChildren()) { host.RemoveChild(child); child.QueueFree(); }
+                categories = ModCategoryEditor.Create(mod.Manifest?.Categories);
+                host.AddChild(categories);
+                categories.SetEditable(ModCategoryManifestStore.CanEdit(mod, ModCategoryEditor.ProjectRoot));
+                categories.Changed += UpdateActions;
+            }
             servers.Clear();
             serverChoice.Clear();
             sectionChoice.Clear();
@@ -172,6 +191,7 @@ namespace Mods.ModManager
         {
             if (busy || publish.Disabled || permissions?.AllowsSection(SelectedSection()) != true)
                 return;
+            if (categories?.HasPendingInput == true) return;
             SetBusy(true);
             status.Text = Tr("mod_manager/publish_uploading");
             try
@@ -195,7 +215,11 @@ namespace Mods.ModManager
                         : string.Format(Tr("mod_manager/publish_progress"), percent);
                 });
                 if (collection == null)
+                {
+                    if (ModCategoryManifestStore.CanEdit(mod, ModCategoryEditor.ProjectRoot))
+                        ModCategoryManifestStore.Save(mod, ModCategoryEditor.ProjectRoot, categories.Categories);
                     await CatalogPublisher.PublishAsync(mod, server.Url, server.TokenFile, SelectedSection(), lifetime.Token, progress);
+                }
                 else
                     await CatalogPublisher.PublishCollectionAsync(collection, server.Url, server.TokenFile, SelectedSection(), lifetime.Token, progress);
                 if (!GodotObject.IsInstanceValid(this))
@@ -295,7 +319,7 @@ namespace Mods.ModManager
         private void UpdateActions()
         {
             if (publish == null) return;
-            publish.Disabled = busy || permissions?.AllowsSection(SelectedSection()) != true
+            publish.Disabled = busy || categories?.HasPendingInput == true || permissions?.AllowsSection(SelectedSection()) != true
                 || !permissions.IsAdmin && permissions.AuthorConsent is { Accepted: false } && !consentCheck.ButtonPressed;
             consentCheck.Disabled = busy;
             createSection.Disabled = busy || permissions?.IsAdmin != true || !permissions.AllowsSection(sectionInput.Text.Trim());
@@ -305,6 +329,7 @@ namespace Mods.ModManager
         private void SetBusy(bool value)
         {
             busy = value;
+            if (categories != null) categories.SetEditable(!value && ModCategoryManifestStore.CanEdit(mod, ModCategoryEditor.ProjectRoot));
             serverChoice.Disabled = value;
             sectionInput.Editable = !value;
             close.Disabled = value;

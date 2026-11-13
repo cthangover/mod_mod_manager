@@ -1,6 +1,8 @@
+using Cthangover.Mods.Interface.View;
 using System;
 using System.Collections.Generic;
 using Cthangover.Core.UI.Theming;
+using Cthangover.Core.Mods;
 using Godot;
 
 namespace Mods.ModManager
@@ -18,7 +20,9 @@ namespace Mods.ModManager
     /// </summary>
     public partial class ModDetailView : VBoxContainer
     {
+        private ModCategoryEditor _categories;
         private ModCardData _data;
+        public event Action CategoriesChanged;
         private Texture2D _ownedPreview;
         private bool _nodesReady;
 
@@ -161,7 +165,7 @@ namespace Mods.ModManager
             }
             else
             {
-                _meta.Text = $"{ModCategoryNames.Translate(ModCategoryNames.Primary(_data.Category))}  ·  {ModStatusNames.Translate(_data.Status)}";
+                _meta.Text = $"{ModCategoryNames.Translate(ModCategories.Primary(_data.Categories))}  ·  {ModStatusNames.Translate(_data.Status)}";
                 _meta.AddThemeColorOverride("font_color", ModStatusNames.Color(_data.Status));
             }
 
@@ -174,6 +178,7 @@ namespace Mods.ModManager
             _size.Text = size > 0 ? FormatSize(size) : string.Empty;
 
             BuildActions();
+            BuildCategories();
             BuildConflictBox();
 
             _descriptionText.Text = NullIfEmpty(_data.Description) ?? "—";
@@ -185,6 +190,33 @@ namespace Mods.ModManager
             SetOptional(_conflictsBox, _conflictsText, JoinOrEmpty(ModQueries.GetConflicts(_data)));
 
             LoadCover();
+        }
+
+        private void BuildCategories()
+        {
+            var host = GetNode<VBoxContainer>("Scroll/Content/Categories");
+            foreach (var child in host.GetChildren()) { host.RemoveChild(child); child.QueueFree(); }
+            _categories = ModCategoryEditor.Create(_data.Categories);
+            host.AddChild(_categories);
+            var editable = ModCategoryManifestStore.CanEdit(_data.LocalInfo, ModCategoryEditor.ProjectRoot);
+            _categories.SetEditable(editable);
+            var save = new Button { Name = "SaveCategories", Text = TranslationServer.Translate("mod_categories/save"), TooltipText = TranslationServer.Translate("mod_categories/development"), Visible = editable };
+            var result = new Label { Name = "CategoryResult", Text = TranslationServer.Translate(editable ? "mod_categories/development" : "mod_categories/readonly"), AutowrapMode = TextServer.AutowrapMode.WordSmart };
+            host.AddChild(save);
+            host.AddChild(result);
+            _categories.Changed += () => save.Disabled = _categories.HasPendingInput;
+            save.Pressed += () =>
+            {
+                try
+                {
+                    ModCategoryManifestStore.Save(_data.LocalInfo, ModCategoryEditor.ProjectRoot, _categories.Categories);
+                    _data.Categories = _categories.Categories;
+                    _meta.Text = $"{ModCategoryNames.Translate(ModCategories.Primary(_data.Categories))}  ·  {ModStatusNames.Translate(_data.Status)}";
+                    result.Text = TranslationServer.Translate("mod_categories/saved");
+                    CategoriesChanged?.Invoke();
+                }
+                catch (Exception error) { result.Text = error.Message; }
+            };
         }
 
         private void BuildDocumentation()

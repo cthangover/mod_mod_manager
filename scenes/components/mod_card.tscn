@@ -72,6 +72,14 @@ clip_text = true
 text_overrun_behavior = 3
 theme_override_font_sizes/font_size = 11
 
+[node name="Category" type="Label" parent="VBox/Body/Box"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 1
+clip_text = true
+text_overrun_behavior = 3
+theme_override_font_sizes/font_size = 11
+
 [node name="Source" type="Label" parent="VBox/Body/Box"]
 custom_minimum_size = Vector2(0, 16)
 layout_mode = 2

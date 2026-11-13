@@ -1,6 +1,7 @@
 namespace Mods.ModManager
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Cthangover.Core.Mods;
     using Cthangover.Core.Utils;
 
@@ -33,8 +34,12 @@ namespace Mods.ModManager
         /// <summary>Installed version string, or null for catalog-only mods.</summary>
         public string LocalVersion { get; set; }
 
-        /// <summary>Manifest category (local) or catalog category (remote), flags combined.</summary>
-        public CategoryType Category { get; set; } = CategoryType.Other;
+        /// <summary>Manifest categories (local) or catalog categories (remote), in primary order.</summary>
+        public List<string> Categories { get; set; } = new();
+
+        /// <summary>Membership from both installed and catalog data; a changed local primary still keeps catalog facets discoverable.</summary>
+        public IEnumerable<string> AllCategories => ModCategories.Effective(Categories)
+            .Concat(Catalog == null ? System.Array.Empty<string>() : ModCategories.Effective(Catalog.Categories)).Distinct(ModCategories.Comparer);
 
         /// <summary>Loaded local mod, or null when only the catalog knows this id.</summary>
         public ModInfo LocalInfo { get; set; }

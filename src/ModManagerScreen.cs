@@ -173,6 +173,7 @@ namespace Mods.ModManager
             _detail.ActionPressed += OnActionPressed;
             _detail.DeleteRequested += OnDeleteRequested;
             _detail.PublishRequested += OnPublishRequested;
+            _detail.CategoriesChanged += OnCategoriesChanged;
             _detail.EnabledToggled += OnEnabledToggled;
             _detail.VersionChanged += OnVersionChanged;
             _detail.CollectionsLinkRequested += OnCollectionsLinkRequested;
@@ -194,6 +195,7 @@ namespace Mods.ModManager
             _detail.ActionPressed -= OnActionPressed;
             _detail.DeleteRequested -= OnDeleteRequested;
             _detail.PublishRequested -= OnPublishRequested;
+            _detail.CategoriesChanged -= OnCategoriesChanged;
             _detail.EnabledToggled -= OnEnabledToggled;
             _detail.VersionChanged -= OnVersionChanged;
             _detail.CollectionsLinkRequested -= OnCollectionsLinkRequested;
@@ -255,11 +257,13 @@ namespace Mods.ModManager
         /// </summary>
         private void RefreshView()
         {
+            var categoryCounts = _model.CountCategories(_filter);
+            _filter.Categories.RemoveWhere(category => !categoryCounts.ContainsKey(category));
             var items = _filter.Apply(_model.Items);
             foreach (var item in items)
                 item.CollectionsCount = CountGamesUsing(item.Id);
             _grid.SetItems(items, _filter.GroupByCategory);
-            _filterPanel.RefreshCounts(_model.CountCategories(_filter), _model.CountStatuses(_filter), _model.CountCatalogs(_filter));
+            _filterPanel.RefreshCounts(categoryCounts, _model.CountStatuses(_filter), _model.CountCatalogs(_filter));
             _resultLabel.Text = string.Format(TranslationServer.Translate("mod_manager/results"), items.Count);
             UpdateBanner();
         }
@@ -427,6 +431,12 @@ namespace Mods.ModManager
                 return;
 
             ExecuteAction(data, kind.Value);
+        }
+
+        private void OnCategoriesChanged()
+        {
+            _model.Reload();
+            RefreshView();
         }
 
         private void OnPublishRequested(ModCardData data)
