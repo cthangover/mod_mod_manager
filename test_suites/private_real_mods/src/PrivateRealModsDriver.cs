@@ -172,9 +172,10 @@ namespace Mods.ModManager.PrivateRealModsTest
                 var consent = dialog.GetNode<CheckBox>(Form + "Consent/Accept");
                 if (consent.IsVisibleInTree() && !consent.ButtonPressed) consent.ButtonPressed = true;
                 if (publish.Disabled || elapsed - shownAt < 0.5) return;
-                // The repeat captures the successful result; the first/new
-                // releases capture the ready form before upload.
-                operation = CaptureAndPress(release % 3 == 1 ? null : "publish-" + release, dialog, publish);
+                // Capture the first ready form and the repeat's success. The new
+                // version is evidenced by its published history below: registry
+                // metadata intentionally stays old, so its ready form is identical.
+                operation = CaptureAndPress(release % 3 == 0 ? "publish-" + release : null, dialog, publish);
                 step = 4;
             }
             else if (step == 4)
@@ -185,9 +186,12 @@ namespace Mods.ModManager.PrivateRealModsTest
             }
             else if (step == 5)
             {
-                operation = release % 3 == 1
-                    ? Capture("publish-" + release, dialog, dialog.GetNode<Button>(Form + "Actions/Close"))
-                    : Task.CompletedTask;
+                if (release % 3 == 1)
+                    operation = Capture("publish-" + release, dialog, dialog.GetNode<Button>(Form + "Actions/Close"));
+                else if (release % 3 == 2)
+                    operation = CapturePublishedHistory();
+                else
+                    operation = Task.CompletedTask;
                 step = 6;
             }
             else if (step == 6)
@@ -218,6 +222,31 @@ namespace Mods.ModManager.PrivateRealModsTest
             published = false;
             dialog.Published += OnPublished;
             shownAt = elapsed;
+        }
+
+        private async Task CapturePublishedHistory()
+        {
+            var close = dialog.GetNode<Button>(Form + "Actions/Close");
+            RequireButton(close);
+            close.EmitSignal(BaseButton.SignalName.Pressed);
+            dialog = null;
+            manager.QueueFree();
+            // Reopen through the real card so the detail reads the refreshed
+            // catalog, rather than the form's deliberately stale local version.
+            OpenManager(publishingMod.Id);
+            await WaitForUi(manager);
+            var card = Find<ModCard>(manager) ?? throw new InvalidOperationException("published card absent");
+            RequireVisible(card, 200, 100);
+            using (var click = new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true })
+                card.EmitSignal(Control.SignalName.GuiInput, click);
+            if (!manager.IsDetailOpen) throw new InvalidOperationException("published detail did not open");
+            await WaitForUi(manager);
+            var versions = manager.GetNode<OptionButton>("Margin/Root/Body/Content/Detail/Scroll/Content/Hero/HeroMargin/HeroRow/Info/VersionRow/Versions");
+            RequireButton(versions);
+            if (versions.ItemCount != 2 || !versions.GetItemText(0).StartsWith("v0.1.1", StringComparison.Ordinal)
+                || !versions.GetItemText(1).StartsWith("v0.1.0", StringComparison.Ordinal) || versions.Selected != 0)
+                throw new InvalidOperationException("published GUI history must show latest 0.1.1 and retained 0.1.0");
+            await Capture("publish-" + release, manager, versions);
         }
 
         private void OnPublished()
@@ -506,7 +535,7 @@ namespace Mods.ModManager.PrivateRealModsTest
         {
             await WaitForUi(surface);
             RequireVisible(target, 20, 16);
-            if (phase == "publish") RequireVisible(dialog.GetNode<Control>("Center/Panel"), 700, 400);
+            if (surface == dialog) RequireVisible(dialog.GetNode<Control>("Center/Panel"), 700, 400);
             if (name == null) return;
             var shots = System.Environment.GetEnvironmentVariable("CTHANGOVER_E2E_SHOTS");
             if (string.IsNullOrEmpty(shots)) return;
