@@ -20,7 +20,7 @@ namespace Mods.ModManager
         public static readonly string[] Folders = { "locale", "scenarios", "scenes", "src" };
 
         /// <summary>The base mods a novice can start from, with their dependency strings.</summary>
-        public static readonly string[] Bases = { "rpg>=1", "dialog_base>=1" };
+        public static readonly string[] Bases = { "rpg>=0.1.0", "dialog_base>=0.1.0" };
 
         /// <summary>
         /// The base options for a game, in the order the wizard lists them: the game's own content mods first (a novice

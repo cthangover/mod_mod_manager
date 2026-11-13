@@ -34,7 +34,7 @@ namespace Mods.ModManager.Tests
         [ModTest("new_mod/manifest_is_json_with_one_dependency")]
         static void ManifestIsJson(ModTestContext ctx)
         {
-            var text = NewModTemplate.Manifest("my_first", "My \"first\" mod", "Line one\nline two", "rpg>=1");
+            var text = NewModTemplate.Manifest("my_first", "My \"first\" mod", "Line one\nline two", "rpg>=0.1.0");
             ModAssert.False(text.Contains("\r"), "LF line ends");
             ModAssert.True(text.EndsWith("\n") && !text.EndsWith("\n\n"), "one final newline");
             using var document = JsonDocument.Parse(text);
@@ -43,18 +43,18 @@ namespace Mods.ModManager.Tests
             ModAssert.Equal("My \"first\" mod", root.GetProperty("name").GetString(), "name keeps its quotes");
             ModAssert.Equal("Line one line two", root.GetProperty("description").GetString(), "description on one line");
             ModAssert.Equal("0.1.0", root.GetProperty("version").GetString(), "version");
-            ModAssert.Equal("rpg>=1", root.GetProperty("depends")[0].GetString(), "dependency");
+            ModAssert.Equal("rpg>=0.1.0", root.GetProperty("depends")[0].GetString(), "dependency");
             ModAssert.Equal(1, root.GetProperty("depends").GetArrayLength(), "one dependency");
             ModAssert.Equal("src/**/*.cs", root.GetProperty("sources")[0].GetString(), "sources glob");
             ModAssert.Equal("story", root.GetProperty("category").GetString(), "category is a CategoryType name");
-            ModAssert.True(text.Contains("\"rpg>=1\""), "the dependency is written as typed, not escaped");
+            ModAssert.True(text.Contains("\"rpg>=0.1.0\""), "the dependency is written as typed, not escaped");
         }
 
         [ModTest("new_mod/bases_of_a_game_start_with_its_content")]
         static void BasesOfGame(ModTestContext ctx)
         {
-            var options = NewModTemplate.OptionsFor(new[] { "rpg_plus_game>=1", "village_pack>=1", "classic_rpg_pack>=1", "village_pack>=1", "bad name" });
-            ModAssert.True(options.SequenceEqual(new[] { "rpg_plus_game>=1", "village_pack>=1", "classic_rpg_pack>=1", "rpg>=1", "dialog_base>=1" }),
+            var options = NewModTemplate.OptionsFor(new[] { "rpg_plus_game>=0.1.0", "village_pack>=0.1.0", "classic_rpg_pack>=0.1.0", "village_pack>=0.1.0", "bad name" });
+            ModAssert.True(options.SequenceEqual(new[] { "rpg_plus_game>=0.1.0", "village_pack>=0.1.0", "classic_rpg_pack>=0.1.0", "rpg>=0.1.0", "dialog_base>=0.1.0" }),
                 "the content mods in order, repeats and invalid strings left out, then the engine bases");
             ModAssert.True(NewModTemplate.OptionsFor(System.Array.Empty<string>()).SequenceEqual(NewModTemplate.Bases),
                 "without a game the options are the engine bases");

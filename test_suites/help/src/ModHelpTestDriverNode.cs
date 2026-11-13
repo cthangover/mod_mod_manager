@@ -224,7 +224,7 @@ namespace Mods.ModManagerHelpTest
                     firstOccurrencePosition = FindOccurrence("m:cthangover:first").Position;
                     Click(second);
                     Check("shared mod selection retains its clicked group", scheme.SelectedGroupKey == "m:cthangover:second");
-                    Check("version form reads the selected occurrence's pin", VersionField<LineEdit>("Value").Text == "1");
+                    Check("version form reads the selected occurrence's pin", VersionField<LineEdit>("Value").Text == "0.1.0");
                     Shot("graphite_02_shared_context");
                     break;
 
@@ -254,7 +254,7 @@ namespace Mods.ModManagerHelpTest
 
                 case 15:
                     SelectVersionPolicy(">=");
-                    VersionField<LineEdit>("Value").Text = "1";
+                    VersionField<LineEdit>("Value").Text = "0.1.0";
                     PressEditorButton("SaveRule");
                     PressEditorButton("TabProblems");
                     Check("restoring a compatible pin clears problems", HasLabel(collectionEditor, TranslationServer.Translate("mod_manager/collection_problems_none")));
@@ -293,7 +293,7 @@ namespace Mods.ModManagerHelpTest
                     break;
 
                 case 19:
-                    Click(FindOccurrence("i:cthangover:dev_tools>=1", "scenario_editor"));
+                    Click(FindOccurrence("i:cthangover:dev_tools>=0.1.0", "scenario_editor"));
                     SelectVersionPolicy("=");
                     VersionField<LineEdit>("Value").Text = "not a version?";
                     PressEditorButton("SaveRule");
@@ -304,7 +304,7 @@ namespace Mods.ModManagerHelpTest
                 case 20:
                     var invalidDialog = FindControl<ConfirmationDialog>(collectionEditor);
                     var unchanged = JsonSerializer.Deserialize<ModCollection>(FindControl<TextEdit>(invalidDialog).Text);
-                    Check("invalid input does not fork or repoint an included block", unchanged.Includes[0].Ref == "dev_tools>=1");
+                    Check("invalid input does not fork or repoint an included block", unchanged.Includes[0].Ref == "dev_tools>=0.1.0");
                     invalidDialog.EmitSignal(ConfirmationDialog.SignalName.Canceled);
                     break;
 
@@ -460,7 +460,7 @@ namespace Mods.ModManagerHelpTest
                 Mechanics = new List<ModCollectionMechanic>
                 {
                     new() { Id = "first", Name = "First role", Role = "engine", Mods = new List<string> { "ui_base>=0" } },
-                    new() { Id = "second", Name = "Second role", Role = "extra", Mods = new List<string> { "ui_base>=1" } },
+                    new() { Id = "second", Name = "Second role", Role = "extra", Mods = new List<string> { "ui_base>=0.1.0" } },
                 },
             };
             PressEditorButton("Json");
@@ -474,7 +474,7 @@ namespace Mods.ModManagerHelpTest
             var fixture = new ModCollection
             {
                 Id = "cthangover", Name = "Graphite included version check",
-                Includes = new List<ModCollectionInclude> { new() { Ref = "dev_tools>=1", Role = "tools" } },
+                Includes = new List<ModCollectionInclude> { new() { Ref = "dev_tools>=0.1.0", Role = "tools" } },
             };
             PressEditorButton("Json");
             var dialog = FindControl<ConfirmationDialog>(collectionEditor);

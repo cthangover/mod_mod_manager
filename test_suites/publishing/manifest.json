@@ -1,1 +1,1 @@
-{"name":"Publishing integration","depends":["menu_base>=1"],"sources":["src/*.cs"]}
+{"name":"Publishing integration","depends":["menu_base>=0.1.0"],"sources":["src/*.cs"]}

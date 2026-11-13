@@ -1831,7 +1831,7 @@ namespace Mods.ModManager
 
             mechanic.Mods ??= new List<string>();
             if (!mechanic.Mods.Any(m => string.Equals(ParseModId(m), choice.Id, StringComparison.OrdinalIgnoreCase)))
-                mechanic.Mods.Add(choice.Id);
+                mechanic.Mods.Add(choice.Id + ">=0.1.0");
 
             Rebuild();
         }
@@ -1915,7 +1915,7 @@ namespace Mods.ModManager
                 Name = name,
                 Role = RoleExtra,
                 Description = description,
-                Mods = new List<string> { id },
+                Mods = new List<string> { id + ">=0.1.0" },
             });
             _currentId = gameId;
             SaveDrafts();

@@ -100,12 +100,12 @@ namespace Mods.ModManager.NewModTest
                     using (var doc = JsonDocument.Parse(manifest))
                     {
                         Check(doc.RootElement.GetProperty("id").GetString() == ModId, "the manifest has the id");
-                        Check(doc.RootElement.GetProperty("depends")[0].GetString() == "rpg_plus_game>=1", "the manifest depends on the game's own story mod, the wizard's default base (plan 14.G16)");
+                        Check(doc.RootElement.GetProperty("depends")[0].GetString() == "rpg_plus_game>=0.1.0", "the manifest depends on the game's own story mod, the wizard's default base (plan 14.G16)");
                     }
                     Check(File.ReadAllText(Path.Combine(modPath, "locale", "en.properties")).Contains($"mod_{ModId}_name = {ModTitle}"), "the English locale stub has the title");
                     Check(!Directory.Exists(Path.Combine(modPath, ".git")) && !File.Exists(Path.Combine(modPath, ".git", "config")), "no repository is made");
                     var joined = ModCollectionStore.LoadUser().Single(c => c.Id == FixtureId);
-                    Check(joined.Mechanics.Any(m => m.Mods != null && m.Mods.Contains(ModId)), "the game lists the mod as a block");
+                    Check(joined.Mechanics.Any(m => m.Mods != null && m.Mods.Contains(ModId + ">=0.1.0")), "the game lists the mod as a block");
                     // Close the creation notice before opening the next modal, as a player does.
                     FindDialog(Tr("mod_manager/newmod_title")).GetOkButton().EmitSignal(BaseButton.SignalName.Pressed);
                     PressButton(Tr("mod_manager/collection_start_scene"));
