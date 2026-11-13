@@ -15,6 +15,9 @@ namespace Mods.ModManager.SettingsTest
     /// <summary>Small-viewport scrolling, cancel, validation, automatic removal and persisted settings through real UI controls.</summary>
     public partial class CollectionSettingsTestDriver : Node
     {
+        private int readinessToken = int.MinValue;
+        private ulong readinessStarted;
+        private ulong readinessFrame;
         private const string FixtureId = "collection_settings_ui_test";
         private ModHubScreen hub;
         private ModCollectionsScreen editor;
@@ -24,9 +27,9 @@ namespace Mods.ModManager.SettingsTest
         private int step;
         private int passed;
         private double elapsed;
-        private double next;
         private bool done;
 
+        /// <summary>Advances when observable scene/UI readiness has held for two real frames; the watchdog remains active.</summary>
         public override void _Process(double delta)
         {
             if (done)
@@ -37,15 +40,30 @@ namespace Mods.ModManager.SettingsTest
                 Finish("timeout at step " + step);
                 return;
             }
-            if (elapsed < next)
-                return;
-            next = elapsed + 0.35;
             try { RunStep(); }
             catch (Exception ex) { Finish("step " + step + ": " + ex); }
         }
 
+        // Deferred UI/scene work must finish before the original assertions run.
+        private bool WaitForReadyFrames(int token, bool ready, double timeoutSeconds = 30)
+        {
+            var now = global::Godot.Time.GetTicksMsec();
+            if (readinessToken != token)
+            {
+                readinessToken = token;
+                readinessStarted = now;
+                readinessFrame = 0;
+            }
+            if (now - readinessStarted > timeoutSeconds * 1000)
+                throw new global::System.TimeoutException($"readiness at step {token}: scene/UI did not become ready");
+            if (!ready) { readinessFrame = 0; return false; }
+            if (readinessFrame == 0) readinessFrame = global::Godot.Engine.GetProcessFrames();
+            return global::Godot.Engine.GetProcessFrames() - readinessFrame >= 2;
+        }
+
         private void RunStep()
         {
+            if (!WaitForReadyFrames(step, Boot.IsReady && GetTree().CurrentScene != null && (step == 0 || editor != null && editor.IsVisibleInTree()), 30)) return;
             switch (step)
             {
                 case 0:

@@ -19,6 +19,9 @@ namespace Mods.ModManager.NewModTest
     /// </summary>
     public partial class NewModTestDriver : Node
     {
+        private int readinessToken = int.MinValue;
+        private ulong readinessStarted;
+        private ulong readinessFrame;
         private const string FixtureId = "new_mod_itest_game";
         private const string ModId = "itest_wizard";
         private const string Scene = "rpg_forest";
@@ -32,9 +35,9 @@ namespace Mods.ModManager.NewModTest
         private int step;
         private int passed;
         private double elapsed;
-        private double next;
         private bool done;
 
+        /// <summary>Advances when observable scene/UI readiness has held for two real frames; the watchdog remains active.</summary>
         public override void _Process(double delta)
         {
             if (done)
@@ -46,9 +49,6 @@ namespace Mods.ModManager.NewModTest
                 return;
             }
 
-            if (elapsed < next)
-                return;
-            next = elapsed + 0.35;
             try
             {
                 RunStep();
@@ -59,8 +59,26 @@ namespace Mods.ModManager.NewModTest
             }
         }
 
+        // Deferred UI/scene work must finish before the original assertions run.
+        private bool WaitForReadyFrames(int token, bool ready, double timeoutSeconds = 30)
+        {
+            var now = global::Godot.Time.GetTicksMsec();
+            if (readinessToken != token)
+            {
+                readinessToken = token;
+                readinessStarted = now;
+                readinessFrame = 0;
+            }
+            if (now - readinessStarted > timeoutSeconds * 1000)
+                throw new global::System.TimeoutException($"readiness at step {token}: scene/UI did not become ready");
+            if (!ready) { readinessFrame = 0; return false; }
+            if (readinessFrame == 0) readinessFrame = global::Godot.Engine.GetProcessFrames();
+            return global::Godot.Engine.GetProcessFrames() - readinessFrame >= 2;
+        }
+
         private void RunStep()
         {
+            if (!WaitForReadyFrames(step, Boot.IsReady && GetTree().CurrentScene != null && (step == 0 || editor != null && editor.IsVisibleInTree()), 30)) return;
             switch (step)
             {
                 case 0:

@@ -37,6 +37,9 @@ namespace Mods.ModManagerHelpTest
         private int step;
         private double elapsed;
         private double stepAt;
+        private int waitingStep = -1;
+        private double waitStarted;
+        private ulong readyFrame;
         private double catalogWaitFrom;
         private bool done;
         private ModHubScreen hub;
@@ -47,6 +50,7 @@ namespace Mods.ModManagerHelpTest
         private string layoutPath;
         private byte[] layoutBackup;
 
+        /// <summary>Advances after visible layout and two real frames; capture runs retain their visual pacing.</summary>
         public override void _Process(double delta)
         {
             if (done)
@@ -60,9 +64,14 @@ namespace Mods.ModManagerHelpTest
                 return;
             }
 
-            if (elapsed - stepAt < 0.5)
+            if (OS.GetCmdlineUserArgs().Any(HasShotsArgument))
+            {
+                if (elapsed - stepAt < 0.5)
+                    return;
+                stepAt = elapsed;
+            }
+            else if (!UiIsReady())
                 return;
-            stepAt = elapsed;
 
             try
             {
@@ -73,6 +82,35 @@ namespace Mods.ModManagerHelpTest
                 failures.Add($"step {step}: {ex.GetType().Name}: {ex.Message}");
                 Finish();
             }
+        }
+
+        private static bool HasShotsArgument(string argument) => argument.StartsWith("--shots=", StringComparison.Ordinal);
+
+        private bool UiIsReady()
+        {
+            if (waitingStep != step)
+            {
+                waitingStep = step;
+                waitStarted = elapsed;
+                readyFrame = 0;
+            }
+            // Step 2 keeps its existing 30 s catalog-fetch bound and its offline checks.
+            if (elapsed - waitStarted > (step == 2 ? 35 : 15))
+            {
+                failures.Add($"timed out waiting for UI layout at step {step}");
+                Finish();
+                return false;
+            }
+            var ready = Boot.IsReady && GetTree().CurrentScene != null
+                && (step == 0 || hub != null && hub.IsVisibleInTree() && hub.Size.X > 0 && hub.Size.Y > 0);
+            if (!ready)
+            {
+                readyFrame = 0;
+                return false;
+            }
+            if (readyFrame == 0)
+                readyFrame = Engine.GetProcessFrames();
+            return Engine.GetProcessFrames() - readyFrame >= 2;
         }
 
         private void RunStep()
