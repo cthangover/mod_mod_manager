@@ -14,18 +14,20 @@
     {
       "id": "mods_hub",
       "scene_path": "scenes/mods_hub_screen.tscn",
-      "button": { "icon": "mod_manager", "locale": "mod_manager/menu_title", "index": 100 }
+      "button": {"icon": "mod_manager", "locale": "mod_manager/menu_title", "index": 100}
     }
   ],
   "test_suites": [
-    { "id": "publishing", "activate": ["--itest=publishing"] },
-    { "id": "catalog_servers", "activate": ["--itest=catalog_servers"] },
-    { "id": "private_catalog", "activate": ["--itest=private_catalog"] },
-    { "id": "archive_password", "activate": ["--itest=archive_password"] },
-    { "id": "help", "activate": ["--itest=mod_help"] },
-    { "id": "documentation", "activate": ["--itest=mod_documentation"] },
-    { "id": "collection_settings", "activate": ["--itest=collection_settings"] },
-    { "id": "new_mod", "activate": ["--itest=new_mod"] },
-    { "id": "new_mod_check", "activate": ["--itest=new_mod_check"] }
+    {"id": "private_real_mods", "activate": ["--itest=private_real_mods"]},
+    {"id": "publishing", "activate": ["--itest=publishing"]},
+    {"id": "catalog_servers", "activate": ["--itest=catalog_servers"]},
+    {"id": "private_catalog", "activate": ["--itest=private_catalog"]},
+    {"id": "archive_password", "activate": ["--itest=archive_password"]},
+    {"id": "help", "activate": ["--itest=mod_help"]},
+    {"id": "documentation", "activate": ["--itest=mod_documentation"]},
+    {"id": "collection_settings", "activate": ["--itest=collection_settings"]},
+    {"id": "new_mod", "activate": ["--itest=new_mod"]},
+    {"id": "new_mod_check", "activate": ["--itest=new_mod_check"]},
+    {"id": "publish_gui", "activate": ["--itest=publish_gui"]}
   ]
 }

@@ -20,6 +20,9 @@ namespace Mods.ModManager
         private readonly List<CatalogServer> servers = new();
         private readonly CancellationTokenSource lifetime = new();
         private ModInfo mod;
+        private ModCollection collection;
+        private string EntityKind => collection == null ? "mod" : "collection";
+        private string EntityId => collection?.Id ?? mod.Id;
         private OptionButton serverChoice;
         private OptionButton sectionChoice;
         private LineEdit sectionInput;
@@ -63,27 +66,50 @@ namespace Mods.ModManager
             publish.Disabled = true;
         }
 
-        /// <summary>Opens for an installed mod; disabled or public catalog sources are excluded.</summary>
+        /// <summary>Opens for an installed mod; every configured source remains visible with a reason if it cannot publish.</summary>
         public void Open(ModInfo selectedMod)
         {
-            EnsureConstructed();
             mod = selectedMod;
-            GetNode<Label>(Form + "Mod").Text = $"{mod.DisplayTitle} · {mod.Id} · {mod.Version}";
+            BeginOpen($"{mod.DisplayTitle} · {mod.Id} · {mod.Version}");
+        }
+
+        /// <summary>Uses the same identity, consent and transfer form for a locally editable collection.</summary>
+        public void OpenCollection(ModCollection selected)
+        {
+            if (selected.Origin == ModCollectionOrigin.Catalog) throw new InvalidOperationException("mod_manager/publish_denied");
+            collection = selected;
+            BeginOpen($"{selected.DisplayTitle} · {selected.Id} · {selected.Version}");
+            GetNode<Label>(Form + "Title").Text = Tr("mod_manager/publish_collection");
+            publish.Text = Tr("mod_manager/publish_collection");
+            GetNode<Label>(Form + "Requirements").Text = Tr("mod_manager/publish_requirements") + "\n" + CollectionPublishRequirements.Describe(selected);
+            GetNode<Control>(Form + "Requirements").Visible = true;
+        }
+
+        private void BeginOpen(string title)
+        {
+            EnsureConstructed();
+            GetNode<Label>(Form + "Mod").Text = title;
+            servers.Clear();
+            serverChoice.Clear();
+            sectionChoice.Clear();
+            publish.Disabled = true;
             try
             {
-                foreach (var server in CatalogServerStore.Default.Load(ModConfig.Instance))
-                {
-                    if (!server.Enabled || string.IsNullOrEmpty(server.TokenFile))
-                        continue;
-                    servers.Add(server);
-                    serverChoice.AddItem(server.Name);
-                }
-                if (servers.Count == 0)
-                    status.Text = Tr("mod_manager/publish_no_servers");
+                servers.AddRange(CatalogServerStore.Default.Load(ModConfig.Instance));
+                foreach (var server in servers)
+                    serverChoice.AddItem(PublishDestination.Label(server));
+                serverChoice.Disabled = servers.Count == 0;
+                var index = PublishDestination.Select(servers, PublishDestination.Previous(EntityKind, EntityId));
+                serverChoice.Select(index);
+                if (index >= 0) OnServerSelected(index);
                 else
-                    OnServerSelected(0);
+                {
+                    status.Text = Tr(servers.Count == 0 ? "mod_manager/publish_no_servers" : "mod_manager/publish_choose_server");
+                    serverChoice.Text = status.Text;
+                    sectionChoice.Disabled = true;
+                }
             }
-            catch { status.Text = Tr("mod_manager/publish_failed"); }
+            catch (Exception error) { ShowError(error); }
         }
 
         protected override void Destruct()
@@ -94,12 +120,13 @@ namespace Mods.ModManager
 
         private async void OnServerSelected(long index)
         {
-            if (busy)
+            if (busy || index < 0 || index >= servers.Count)
                 return;
             var current = ++selectionVersion;
             permissions = null;
             ConfigureConsent();
             sectionChoice.Clear();
+            sectionChoice.Disabled = true;
             sectionInput.Text = "";
             customSection.Visible = false;
             identity.Text = "";
@@ -108,17 +135,28 @@ namespace Mods.ModManager
             try
             {
                 var server = servers[(int)index];
-                var received = await CatalogPublisher.GetPermissionsAsync(server.Url, server.TokenFile, lifetime.Token);
+                var availability = await PublishAvailability.CheckAsync(server, LoadPermissions, lifetime.Token);
                 if (!GodotObject.IsInstanceValid(this) || current != selectionVersion)
                     return;
-                permissions = received;
+                if (availability.ErrorKey != null)
+                {
+                    status.Text = PublishDestination.Label(server) + "\n" + Tr(availability.ErrorKey);
+                    if (!string.IsNullOrEmpty(availability.ErrorDetail)) status.Text += "\n" + availability.ErrorDetail;
+                    sectionChoice.Disabled = true;
+                    return;
+                }
+                permissions = availability.Permissions;
                 ConfigureConsent();
                 customSection.Visible = permissions.AllowsCustomSection;
                 createSection.Visible = permissions.IsAdmin;
-                foreach (var section in permissions.Sections)
+                foreach (var section in permissions.AvailableSections)
                     sectionChoice.AddItem(section);
                 identity.Text = string.Format(Tr("mod_manager/publish_identity"), permissions.Author, permissions.AuthorId);
-                if (sectionChoice.ItemCount > 0) sectionInput.Text = sectionChoice.GetItemText(0);
+                if (sectionChoice.ItemCount > 0)
+                {
+                    sectionChoice.Select(0);
+                    sectionInput.Text = sectionChoice.GetItemText(0);
+                }
                 status.Text = Tr(permissions.IsAdmin ? "mod_manager/publish_admin_ready" : "mod_manager/publish_ready");
                 UpdateActions();
             }
@@ -156,11 +194,14 @@ namespace Mods.ModManager
                         ? string.Format(Tr("mod_manager/publish_reconnecting"), percent, state.Retry)
                         : string.Format(Tr("mod_manager/publish_progress"), percent);
                 });
-                await CatalogPublisher.PublishAsync(mod, server.Url, server.TokenFile,
-                    SelectedSection(), lifetime.Token, progress);
+                if (collection == null)
+                    await CatalogPublisher.PublishAsync(mod, server.Url, server.TokenFile, SelectedSection(), lifetime.Token, progress);
+                else
+                    await CatalogPublisher.PublishCollectionAsync(collection, server.Url, server.TokenFile, SelectedSection(), lifetime.Token, progress);
                 if (!GodotObject.IsInstanceValid(this))
                     return;
-                status.Text = Tr("mod_manager/publish_success");
+                PublishDestination.Remember(EntityKind, EntityId, server.Url);
+                status.Text = Tr("mod_manager/publish_success") + "\n" + PublishDestination.Label(server);
                 Published?.Invoke();
             }
             catch (OperationCanceledException) { }
@@ -293,11 +334,14 @@ namespace Mods.ModManager
             finally { if (GodotObject.IsInstanceValid(this)) SetBusy(false); }
         }
 
+        private static Task<PublishingPermissions> LoadPermissions(CatalogServer server, CancellationToken cancellation)
+            => CatalogPublisher.GetPermissionsAsync(server.Url, server.TokenFile, cancellation);
+
         private void ShowError(Exception error)
         {
-            var key = error is InvalidOperationException && error.Message.StartsWith("mod_manager/publish_", StringComparison.Ordinal)
-                ? error.Message : "mod_manager/publish_failed";
-            status.Text = Tr(key);
+            status.Text = Tr(PublishAvailability.ErrorMessageKey(error));
+            var detail = PublishAvailability.ErrorMessageDetail(error);
+            if (!string.IsNullOrEmpty(detail)) status.Text += "\n" + detail;
         }
 
         private void OnClose()

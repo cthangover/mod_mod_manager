@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Cthangover.Core.Games;
+using Cthangover.Core.Scenes;
 using Cthangover.Core.Mods;
 using Cthangover.Core.UI.Theming;
 using Cthangover.Core.Utils;
@@ -299,6 +300,14 @@ namespace Mods.ModManager
             var foot = UiKit.Row(UiTokens.Space2);
             foot.AddChild(BuildPrimaryButton(summary));
             foot.AddChild(BuildEditButton(summary));
+            if (summary.Collection.Origin != ModCollectionOrigin.Catalog)
+            {
+                var publish = UiKit.Button(TranslationServer.Translate("mod_manager/publish_collection"));
+                publish.Name = "PublishCollection";
+                publish.Pressed += () => OpenPublish(summary.Collection);
+                ModHelpPanel.Attach(publish, "collection_publish");
+                column.AddChild(publish);
+            }
             if (CollectionDeletion.CanDelete(summary.Collection))
                 foot.AddChild(BuildDeleteButton(summary));
             foot.AddChild(UiKit.Spacer());
@@ -373,9 +382,7 @@ namespace Mods.ModManager
         /// Status badges exactly per the hub rules: draft for empty games;
         /// red/yellow "missing N" plus "problems: K" for unplayable ones;
         /// amber "enable N" when only disabled mods hold the game back; green
-        /// "ready to play" otherwise. A disabled mod alone never breaks
-        /// <see cref="ModCollectionGameSummary.IsReady"/>, so the badges follow
-        /// the summary, not raw node states.
+        /// "ready to play" only when the entire required set is installed and enabled.
         /// </summary>
         private static List<(string Text, Color Color)> BuildStatusBadges(ModCollectionGameSummary summary)
         {
@@ -388,7 +395,7 @@ namespace Mods.ModManager
                 return badges;
             }
 
-            if (!summary.IsReady)
+            if (summary.MissingIds.Count > 0 || summary.MismatchIds.Count > 0 || summary.ProblemsCount > 0)
             {
                 var gaps = summary.MissingIds.Count + summary.MismatchIds.Count;
                 if (gaps > 0)
@@ -403,7 +410,9 @@ namespace Mods.ModManager
                 return badges;
             }
 
-            if (summary.PlanInstallCount == 0 && summary.PlanEnableCount > 0)
+            if (summary.PlanInstallCount > 0)
+                badges.Add((string.Format(translate("mod_manager/gallery_download_badge_n"), summary.PlanInstallCount), UiTokens.Warning));
+            else if (summary.PlanEnableCount > 0)
                 badges.Add((string.Format(translate("mod_manager/gallery_enable_badge_n"), summary.PlanEnableCount), UiTokens.Warning));
             else
                 badges.Add((translate("mod_manager/gallery_ready"), UiTokens.SuccessText));
@@ -418,11 +427,11 @@ namespace Mods.ModManager
             Button button;
             Action action;
 
-            if (summary.PlanInstallCount > 0)
+            if (summary.PlanInstallCount > 0 || summary.Collection.Origin == ModCollectionOrigin.Catalog && summary.Collection.Downloads?.Count > 0)
             {
                 button = UiKit.Button(string.Format(translate("mod_manager/gallery_install_btn_n"), summary.PlanInstallCount), ButtonKind.Primary);
                 action = () => ApplyPlan(summary.Collection.Id);
-                button.Disabled = summary.MissingIds.Count > 0 || _installingId != null;
+                button.Disabled = summary.MissingIds.Count > 0 || summary.ProblemsCount > 0 || summary.MismatchIds.Count > 0 || _installingId != null;
             }
             else if (summary.PlanEnableCount > 0)
             {
@@ -438,7 +447,7 @@ namespace Mods.ModManager
             }
             else
             {
-                button = UiKit.Button(translate("mod_manager/gallery_ready_done"));
+                button = UiKit.Button(translate(summary.IsReady ? "mod_manager/gallery_ready_done" : "mod_manager/gallery_unavailable"));
                 action = null;
                 button.Disabled = true;
             }
@@ -447,6 +456,14 @@ namespace Mods.ModManager
             if (action != null)
                 button.Pressed += action;
             return button;
+        }
+
+        private void OpenPublish(ModCollection collection)
+        {
+            var dialog = TscnScenes.LoadAndBuild("scenes/components/mod_publish_dialog.tscn") as ModPublishDialog;
+            if (dialog == null) throw new System.InvalidOperationException("publish dialog missing");
+            GetTree().Root.AddChild(dialog);
+            dialog.OpenCollection(collection);
         }
 
         private Button BuildEditButton(ModCollectionGameSummary summary)
@@ -496,8 +513,7 @@ namespace Mods.ModManager
         {
             if (_installingId != null
                 || !_plans.TryGetValue(collectionId, out var plan)
-                || plan.IsEmpty
-                || plan.Missing.Count > 0)
+                || plan.HasProblems)
             {
                 return;
             }
@@ -512,7 +528,7 @@ namespace Mods.ModManager
             bool success;
             try
             {
-                success = await ModCollectionInstaller.ApplyAsync(plan, _sessionInstalled);
+                success = await ModCollectionInstaller.ApplyAsync(plan, _sessionInstalled, summary?.Collection, _index);
             }
             catch (Exception ex)
             {

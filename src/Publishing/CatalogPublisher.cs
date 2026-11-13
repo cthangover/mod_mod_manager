@@ -74,8 +74,17 @@ namespace Mods.ModManager
         /// temporary snapshot is removed on every outcome. Cancellation stops the
         /// transfer; it also prevents upload after packaging.
         /// </summary>
-        public static async Task PublishAsync(ModInfo mod, string catalogUrl, string tokenFile, string section,
+        public static Task PublishAsync(ModInfo mod, string catalogUrl, string tokenFile, string section,
             CancellationToken cancellation, IProgress<PublishProgress> progress = null)
+            => PublishEntityAsync(mod, null, catalogUrl, tokenFile, section, cancellation, progress);
+
+        /// <summary>Uses the same resumable protocol, identity and consent policy for a collection package.</summary>
+        public static Task PublishCollectionAsync(ModCollection collection, string catalogUrl, string tokenFile, string section,
+            CancellationToken cancellation, IProgress<PublishProgress> progress = null)
+            => PublishEntityAsync(null, collection, catalogUrl, tokenFile, section, cancellation, progress);
+
+        private static async Task PublishEntityAsync(ModInfo mod, ModCollection collection, string catalogUrl, string tokenFile, string section,
+            CancellationToken cancellation, IProgress<PublishProgress> progress)
         {
             var permissions = await GetPermissionsAsync(catalogUrl, tokenFile, cancellation);
             if (!permissions.IsAdmin && permissions.AuthorConsent is { Accepted: false })
@@ -88,7 +97,7 @@ namespace Mods.ModManager
                 File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             try
             {
-                var prepared = await Task.Factory.StartNew(PrepareInBackground, (mod, directory), cancellation,
+                var prepared = await Task.Factory.StartNew(PrepareInBackground, (mod, collection, directory), cancellation,
                     TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
                 cancellation.ThrowIfCancellationRequested();
                 var size = new FileInfo(prepared.Archive).Length;
@@ -101,7 +110,7 @@ namespace Mods.ModManager
                 using var entry = JsonDocument.Parse(prepared.Json);
                 var opening = JsonSerializer.Serialize(new Dictionary<string, object>
                 {
-                    ["section"] = section, ["file_name"] = Path.GetFileName(prepared.Archive),
+                    ["kind"] = collection == null ? "mod" : "collection", ["section"] = section, ["file_name"] = Path.GetFileName(prepared.Archive),
                     ["size"] = size, ["entry"] = entry.RootElement
                 });
                 // Opening the same release again resumes the server's session; a
@@ -220,6 +229,7 @@ namespace Mods.ModManager
         private static async Task<(HttpStatusCode Status, JsonElement Body)> SendAsync(HttpClient client, TransferRetry retry,
             Func<HttpRequestMessage> create, IProgress<PublishProgress> progress, long size, long sent, CancellationToken cancellation)
         {
+            Exception lastFailure = null;
             while (true)
             {
                 TimeSpan? retryAfter = null;
@@ -241,15 +251,17 @@ namespace Mods.ModManager
                         return (response.StatusCode, body);
                     if (!busy && !TransferRetry.IsTransient(response.StatusCode))
                         ThrowRefusal(response, body);
+                    lastFailure = new HttpRequestException($"HTTP {(int)response.StatusCode} ({response.StatusCode})");
                     retryAfter = TransferRetry.RetryAfter(response);
                 }
                 catch (Exception error) when (TransferRetry.IsTransient(error, cancellation))
                 {
+                    lastFailure = error;
                     GameLogger.Log("MOD_MANAGER", $"Publishing request interrupted: {error.GetType().Name}; attempt {retry.Failures + 1}", LogLevel.Warning);
                 }
                 progress?.Report(new PublishProgress(sent, size, retry.Failures + 1));
                 if (!await retry.WaitAsync(retryAfter, cancellation))
-                    throw new InvalidOperationException("mod_manager/publish_connection");
+                    throw new InvalidOperationException("mod_manager/publish_connection", lastFailure);
             }
         }
 
@@ -291,8 +303,8 @@ namespace Mods.ModManager
 
         private static (string Archive, string Json) PrepareInBackground(object state)
         {
-            var (mod, directory) = ((ModInfo, string))state;
-            return Prepare(mod, directory);
+            var (mod, collection, directory) = ((ModInfo, ModCollection, string))state;
+            return collection == null ? Prepare(mod, directory) : CollectionPackage.Export(collection, directory);
         }
 
         private static (string Archive, string Json) Prepare(ModInfo mod, string directory)

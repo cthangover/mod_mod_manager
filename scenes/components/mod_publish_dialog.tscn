@@ -52,6 +52,12 @@ theme_override_font_sizes/font_size = 24
 [node name="Mod" type="Label" parent="Center/Panel/Margin/Form"]
 layout_mode = 2
 
+[node name="Requirements" type="Label" parent="Center/Panel/Margin/Form"]
+visible = false
+layout_mode = 2
+autowrap_mode = 3
+custom_minimum_size = Vector2(0, 54)
+
 [node name="ServerLabel" type="Label" parent="Center/Panel/Margin/Form"]
 layout_mode = 2
 text = "mod_manager/publish_server"

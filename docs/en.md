@@ -101,6 +101,26 @@ The server can also build its catalog automatically from folders uploaded throug
 WinSCP. These appear as ordinary catalog entries. Removing a version from those
 folders withdraws it from the current catalog; players keep installed copies.
 
+## Publish collections
+
+Choose **Publish collection** on a local or built-in collection's gallery card
+or in its scheme editor. Remote catalog entries must first become local
+packages. The shared form shows required mods and included collections and
+warns about unavailable references; the warning does not prevent publication.
+
+Destinations show the catalog name and full URL, including port and path.
+Reader-only keys are excluded. With several destinations, choose one explicitly;
+only this entity's last successful destination is selected automatically. Check
+the verified author and section, read and accept any author consent, then send.
+The result names the destination. Mod publication follows the same rules.
+
+A collection ZIP contains only its document, cover and locales, up to 16 MiB;
+mods are downloaded separately. Collections have their own 100-ID quota,
+independent of mods. Repeating a publication is safe and a new version retains
+history. The installer saves the cover and locales with the collection.
+**Ready to play** requires every mod installed and enabled. Otherwise the badge
+shows downloads, enabling, or unavailable dependencies instead.
+
 ## Games and collections
 
 The **Collections** tab first shows the ready-made games. A game is a *collection*: a named set of mods with the place to start.

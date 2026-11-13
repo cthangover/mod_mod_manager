@@ -23,6 +23,23 @@ namespace Mods.ModManager
         [JsonPropertyName("author_consent")]
         public AuthorConsentPermissions AuthorConsent { get; set; }
 
+        /// <summary>Concrete choices include literal grants even before the first package creates their section. Masks remain in the name field.</summary>
+        [JsonIgnore]
+        public IReadOnlyList<string> AvailableSections
+        {
+            get
+            {
+                var result = new List<string>();
+                if (Sections != null)
+                    foreach (var section in Sections)
+                        if (AllowsSection(section) && !result.Contains(section)) result.Add(section);
+                if (SectionPatterns != null)
+                    foreach (var section in SectionPatterns)
+                        if (IsIdentifier(section, false) && !result.Contains(section)) result.Add(section);
+                return result;
+            }
+        }
+
         /// <summary>Whether the form may offer a concrete name beyond its current section list.</summary>
         [JsonIgnore]
         public bool AllowsCustomSection

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using Cthangover.Core.Games;
+using Cthangover.Core.Scenes;
 using Cthangover.Core.Localization;
 using Cthangover.Core.Mods;
 using Cthangover.Core.Settings;
@@ -448,6 +449,10 @@ namespace Mods.ModManager
             ModHelpPanel.Attach(_gameSettings, "game_settings");
             _reset = GetNode<Button>("Margin/Root/Header/Reset");
             _save = GetNode<Button>("Margin/Root/Header/Save");
+            var publishCollection = GetNode<Button>("Margin/Root/Header/PublishCollection");
+            publishCollection.Text = TranslationServer.Translate("mod_manager/publish_collection");
+            publishCollection.Pressed += OnPublishCollection;
+            ModHelpPanel.Attach(publishCollection, "collection_publish");
             _bannerPanel = GetNode<PanelContainer>("Margin/Root/Banner");
             _bannerLabel = GetNode<Label>("Margin/Root/Banner/BannerLabel");
             _canvas = GetNode<CollectionSchemeCanvas>("Margin/Root/Body/CanvasHost/CanvasScroll/SchemeCanvas");
@@ -699,6 +704,7 @@ namespace Mods.ModManager
                     node.Title = info.DisplayTitle;
             }
             _layout = _currentId == null ? new ModCollectionLayout() : CollectionLayoutStore.Load(_currentId);
+            GetNode<Button>("Margin/Root/Header/PublishCollection").Visible = EffectiveCollection(_currentId)?.Origin != ModCollectionOrigin.Catalog;
             _plan = ModCollectionPlan.Build(_graph, CatalogService.CachedEntries ?? new List<CatalogExportEntry>());
 
             if (_selectedGroupKey == null && _graph.Groups.Count > 0)
@@ -2349,6 +2355,16 @@ namespace Mods.ModManager
             SetBanner(progress.Message);
         }
 
+        private void OnPublishCollection()
+        {
+            var collection = EffectiveCollection(_currentId);
+            if (collection == null || collection.Origin == ModCollectionOrigin.Catalog) return;
+            var dialog = TscnScenes.LoadAndBuild("scenes/components/mod_publish_dialog.tscn") as ModPublishDialog;
+            if (dialog == null) throw new InvalidOperationException("publish dialog missing");
+            GetTree().Root.AddChild(dialog);
+            dialog.OpenCollection(collection);
+        }
+
         private async void OnApplyPressed()
         {
             if (_installing || _plan == null || _plan.IsEmpty
@@ -2362,7 +2378,7 @@ namespace Mods.ModManager
                 EffectiveCollection(_currentId)?.DisplayTitle ?? _currentId));
             UpdateApplyButton();
 
-            var failed = !await ModCollectionInstaller.ApplyAsync(plan, _sessionInstalled);
+            var failed = !await ModCollectionInstaller.ApplyAsync(plan, _sessionInstalled, EffectiveCollection(_currentId), BuildCollectionIndex());
             if (!failed)
             {
                 _restartRequired = true;
