@@ -1,0 +1,1 @@
+{"name":"Publishing through catalog GUI","version":"0.1.0","depends":["menu_base>=0.1.0"],"sources":["src/*.cs"]}
