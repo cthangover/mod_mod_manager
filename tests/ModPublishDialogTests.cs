@@ -66,7 +66,7 @@ namespace Mods.ModManager.Tests
                 ModConfig.Instance.CatalogUrls = new List<string> { server.CatalogUrl };
                 ModConfig.Instance.CatalogTokenFiles = new Dictionary<string, string> { [server.CatalogUrl] = server.TokenFile };
                 dialog = (ModPublishDialog)TscnScenes.LoadAndBuild("scenes/components/mod_publish_dialog.tscn");
-                ((SceneTree)Engine.GetMainLoop()).Root.AddChild(dialog);
+                ((SceneTree)Godot.Engine.GetMainLoop()).Root.AddChild(dialog);
                 dialog.Open(new ModInfo { Id = "consent-preview", Name = "Consent preview", Manifest = new ModManifest { Version = "1.0" } });
                 using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
                 timeout.CancelAfter(TimeSpan.FromSeconds(15));

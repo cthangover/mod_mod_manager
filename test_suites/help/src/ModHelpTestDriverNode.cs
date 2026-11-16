@@ -109,8 +109,8 @@ namespace Mods.ModManagerHelpTest
                 return false;
             }
             if (readyFrame == 0)
-                readyFrame = Engine.GetProcessFrames();
-            return Engine.GetProcessFrames() - readyFrame >= 2;
+                readyFrame = Godot.Engine.GetProcessFrames();
+            return Godot.Engine.GetProcessFrames() - readyFrame >= 2;
         }
 
         private void RunStep()
